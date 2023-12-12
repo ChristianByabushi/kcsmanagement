@@ -1,0 +1,14 @@
+<template>
+  <div>
+    <v-progress-circular
+      center
+      class="loading-overlay"
+      v-if="$store.state.isloading"
+      indeterminate
+      size="40"
+      model-value="100"
+      color="primary"
+    ></v-progress-circular>
+  </div>
+</template>
+<style></style>
