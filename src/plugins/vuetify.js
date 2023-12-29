@@ -14,7 +14,6 @@ export default new Vuetify({
     locales: { fr, en },
     current: "fr",
   },
-
   theme: {
     themes: {
       light: {
@@ -24,7 +23,7 @@ export default new Vuetify({
         error: colors.red.accent3, 
         primaryMenu:colors.indigo, 
         extraMenu:colors.blueGrey
-      },
+      }, 
       dark: {
         primary: "#FAFAFA",
         secondary: colors.grey.darken3, // Example secondary color for dark mode
@@ -32,8 +31,6 @@ export default new Vuetify({
         error: colors.red.accent2, // Example error color for dark mode
         primaryMenu:"#757575",
         extraMenu:colors.brown,
-
-
       },
     },
   },

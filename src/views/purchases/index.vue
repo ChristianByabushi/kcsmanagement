@@ -72,7 +72,7 @@
               <td>{{ item.stock_quantity }}</td>
               <td>{{ totalCost(item.unit_price, item.stock_quantity) }}</td>
               <td>{{ dataConvert(item.created_at) }}</td>
-              <td>{{ item.supplier.name }}</td>
+              <td>{{ supplierResolveNull(item) }}</td>
               <td>
                 <editPurchase :PurchaseObjectFromParent="computedBuildingValues(item)" v-on:getPurchases="getPurchases">
                 </editPurchase>
@@ -209,10 +209,17 @@ export default {
       if (item.supplier == null) {
         item.supplier = {
           'id': null,
-          'name': null
+          'name': 'supplier not provided'
         }
       }
       return item
+    },
+    supplierResolveNull(item) {
+      if (item.supplier !== null)
+        return item.supplier.name
+      else
+        "supplier not provided"
+        
     },
     totalCost(unitprice, stock_quantity) {
       let total = 0
@@ -222,6 +229,7 @@ export default {
     dataConvert(value) {
       return new Date(value)
     },
+
     async getProducts() {
       await axios
         .get(`kcs/api/products/`)

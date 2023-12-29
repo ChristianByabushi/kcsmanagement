@@ -2,12 +2,12 @@
   <v-dialog v-model="dialog" persistent max-width="700px">
     <template v-slot:activator="{ on, attrs }">
       <v-btn class="mt-1" elevation="2" color="primary" icon outlined v-bind="attrs" v-on="on">
-        <v-icon> mdi-plus </v-icon>
+        <v-icon> mdi-pencil </v-icon>
       </v-btn>
     </template>
     <v-card>
       <v-card-title>
-        <span class="text-h5">Sell in the Stock</span>
+        <span class="text-h5">Edit in the Stock</span>
       </v-card-title>
       <v-card-text>
         <v-container>
@@ -61,8 +61,7 @@
         <v-btn color="blue darken-1" text @click="removeAddDialog()">
           Close
         </v-btn>
-        <v-btn :loading="loadingButton" color="blue darken-1" text @click="postForAddingProductPurchased()"
-          :disabled="!form">
+        <v-btn :loading="loadingButton" color="blue darken-1" text @click="putPurchase()" :disabled="!form">
           Save
         </v-btn>
       </v-card-actions>
@@ -73,23 +72,29 @@
 import axios from "axios";
 import moment from 'moment'
 import { format, parseISO } from 'date-fns'
+// PurchaseObjectFromParent
 export default {
-  name: "addPurchase",
+  name: "editPurchase",
+  props: {
+    PurchaseObjectFromParent: Object,
+  },
   data() {
     return {
       dialog: false,
-      form: false, 
+      form: false,
       date: format(parseISO(new Date().toISOString()), 'yyyy-MM-dd'),
       menu1: false,
       menu2: false,
-      errors: [], 
-      suppliers:[],
+      errors: [],
       date: format(parseISO(new Date().toISOString()), 'yyyy-MM-dd'),
-      supplier_id: null,
-      stock_quantity: "",
-      unit_price: "",
-      products: "",
-      product_id: "",
+      suppliers: [],
+      id: this.PurchaseObjectFromParent.id,
+      supplier_id: this.PurchaseObjectFromParent.supplier.id,
+      stock_quantity: this.PurchaseObjectFromParent.stock_quantity,
+      unit_price: this.PurchaseObjectFromParent.unit_price,
+      date: this.PurchaseObjectFromParent.created_at,
+      products: [],
+      product_id: this.PurchaseObjectFromParent.product.id,
       loadingButton: false,
       rules: {
         required: (v) => !!v || " This field is required",
@@ -113,10 +118,10 @@ export default {
   methods: {
     removeAddDialog() {
       this.product_id = "";
-      this.dialog = false;
-      this.unit_price = "";
       this.supplier_id = "";
+      this.unit_price = "";
       this.stock_quantity = "";
+      this.dialog = false;
       this.errors = [];
     },
     async getProducts() {
@@ -129,19 +134,21 @@ export default {
           console.log(error);
         });
     },
-
     async getSuppliers() {
       await axios
         .get(`kcs/api/suppliers/`)
         .then((response) => {
           this.suppliers = response.data
+          this.suppliers.push({
+            "id": null,
+            "name": null
+          })
         })
         .catch((error) => {
           console.log(error);
         });
     },
-
-    async postForAddingProductPurchased() {
+    async putPurchase() {
       this.loadingButton = true;
       this.errors = [];
       const formData = new FormData()
@@ -150,20 +157,16 @@ export default {
       formData.append('unit_price', this.unit_price)
       formData.append('stock_quantity', this.stock_quantity)
       formData.append('created_at', this.date)
-
       await axios
-        .post("kcs/api/products-purchased/", formData,
-          {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
-          }
-        )
+        .put(`kcs/api/products-purchased/${this.id}/`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        })
         .then((response) => {
           this.$emit("getPurchases");
           this.dialog = false;
         })
-
         .catch((error) => {
           if (error.response) {
             for (const property in error.response.data) {
@@ -171,6 +174,7 @@ export default {
                 `${property} : ${error.response.data[property]}`
               );
             }
+            console.log(JSON.stringify(error.response.data));
           } else if (error.message) {
             for (i in error) {
               console.log(i);

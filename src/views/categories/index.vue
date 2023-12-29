@@ -22,7 +22,8 @@
       </v-row>
       <v-expansion-panels focusable>
         <v-expansion-panel v-for="item in categories" :key="item.id">
-          <v-expansion-panel-header>{{ item.name }}</v-expansion-panel-header>
+          <v-expansion-panel-header>{{ item.name }}
+          </v-expansion-panel-header>
           <v-expansion-panel-content>
             <v-row>
               <v-col cols="10"> {{ item.description }}</v-col>

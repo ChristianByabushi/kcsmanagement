@@ -7,7 +7,7 @@
     </template>
     <v-card>
       <v-card-title>
-        <span class="text-h5">Sell in the Stock</span>
+        <span class="text-h5">Order</span>
       </v-card-title>
       <v-card-text>
         <v-container>
@@ -29,9 +29,25 @@
                   label="Select the product purchased"></v-select>
               </v-col>
               <v-col cols="6">
-                <v-select rows="3" outlined :items="suppliers" item-value="id" item-text="name" hint="Select a supplier"
+                <v-select rows="3" outlined :items="customers" item-value="id" item-text="name" hint="Select a supplier"
                   v-model="supplier_id" label="supplier"></v-select>
-              </v-col>
+              </v-col> 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+              
             </v-row>
             <v-row>
               <v-col cols="6">
@@ -83,9 +99,9 @@ export default {
       menu1: false,
       menu2: false,
       errors: [], 
-      suppliers:[],
+      customers:[],
       date: format(parseISO(new Date().toISOString()), 'yyyy-MM-dd'),
-      supplier_id: null,
+      customer_id: null,
       stock_quantity: "",
       unit_price: "",
       products: "",
@@ -108,14 +124,14 @@ export default {
   },
   mounted() {
     this.getProducts()
-    this.getSuppliers()
+    this.getCustomers()
   },
   methods: {
     removeAddDialog() {
       this.product_id = "";
       this.dialog = false;
       this.unit_price = "";
-      this.supplier_id = "";
+      this.customer_id = "";
       this.stock_quantity = "";
       this.errors = [];
     },
@@ -130,11 +146,11 @@ export default {
         });
     },
 
-    async getSuppliers() {
+    async getCustomers() {
       await axios
-        .get(`kcs/api/suppliers/`)
+        .get(`kcs/api/customers/`)
         .then((response) => {
-          this.suppliers = response.data
+          this.customers = response.data
         })
         .catch((error) => {
           console.log(error);
@@ -146,13 +162,13 @@ export default {
       this.errors = [];
       const formData = new FormData()
       formData.append('product_id', this.product_id)
-      formData.append('supplier_id', this.supplier_id)
+      formData.append('customer_id', this.customer_id)
       formData.append('unit_price', this.unit_price)
       formData.append('stock_quantity', this.stock_quantity)
       formData.append('created_at', this.date)
 
       await axios
-        .post("kcs/api/products-purchased/", formData,
+        .post("kcs/api/products/", formData,
           {
             headers: {
               'Content-Type': 'multipart/form-data',
@@ -160,7 +176,7 @@ export default {
           }
         )
         .then((response) => {
-          this.$emit("getPurchases");
+          this.$emit("getProducts");
           this.dialog = false;
         })
 
