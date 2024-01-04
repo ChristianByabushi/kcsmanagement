@@ -4,7 +4,7 @@
       <v-btn
         class="mt-1" 
         elevation="2"
-        color="primary"
+        color="extraMeny"
         icon
         outlined
         v-bind="attrs"

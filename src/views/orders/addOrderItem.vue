@@ -12,11 +12,13 @@
         </v-btn>
       </v-toolbar-items>
     </v-toolbar>
+
     <template v-slot:activator="{ on, attrs }">
       <v-btn class="mt-1" elevation="2" color="extraMenu" icon outlined v-bind="attrs" v-on="on">
         <v-icon> mdi-plus </v-icon>
       </v-btn>
     </template>
+
     <v-card>
       <v-card-text>
         <v-container>
@@ -32,24 +34,35 @@
                   <v-date-picker v-model="date" @change="menu1 = false"></v-date-picker>
                 </v-menu>
               </v-col>
-              <v-col cols="3 md-6" class="pa-0 ma-0">
+              <v-col cols="3" class="pa-0 ma-0">
                 <v-select class="ma-0 mt-3 ml-3" no-gatthers rows="3" :items="customers" item-value="id" item-text="name"
                   hint="This customer is one to whom the products are sold" v-model="customer_id"
                   label="Customer"></v-select>
               </v-col>
-              <v-spacer></v-spacer>
-              <v-col cols="2" class="mr-2" align="end">
-                <addClient v-on:getCustomers="getCustomers">AddClient</addClient>
+              <v-col>
+                <addClient id="addClientOrder" v-on:getCustomers="getCustomers"></addClient>
               </v-col>
-
+              <v-spacer></v-spacer>
             </v-row>
-
             <v-simple-table>
               <template v-slot:default>
+                <caption class="ma-4">
+                  <v-row justify="space-between">
+                    <h2 class="mt-0 mt-2" cols="8">Order items</h2>
+                    <span>
+                      <v-btn class="mt-2" @click="functionaddOrderItem()">
+                        <v-icon>mdi-plus</v-icon>
+                      </v-btn>
+                    </span>
+                  </v-row>
+                </caption>
                 <thead>
                   <tr>
                     <th class="text-left">
                       #Num
+                    </th>
+                    <th class="text-left">
+                      Item
                     </th>
                     <th class="text-left">
                       P.U
@@ -60,15 +73,14 @@
                     <th class="text-left">
                       Total
                     </th>
+                    <th class="text-left">
+                      <v-icon> mdi-pen </v-icon>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                  </tr>
+                  <ItemObject v-for="(item, index) in orderItems" v-bind:key="index" v-bind:orderItem="item"
+                    :index="index" v-on:removeFromOrderItem="removeFromOrderItem" @updateItem="updateItem" />
                 </tbody>
               </template>
             </v-simple-table>
@@ -89,11 +101,12 @@
 <script>
 import axios from "axios";
 import addClient from "../clients/addClient.vue";
+import ItemObject from "../orders/orderItem.vue"
 import moment from 'moment'
 import { format, parseISO } from 'date-fns'
 export default {
   name: "addOrderItem",
-  components: { addClient },
+  components: { addClient, ItemObject },
   data() {
     return {
       dialog: false,
@@ -108,6 +121,7 @@ export default {
       stock_quantity: "",
       unit_price: "",
       products: "",
+      orderItems: [],
       product_id: "",
       loadingButton: false,
       rules: {
@@ -123,11 +137,33 @@ export default {
       return this.date ? format(parseISO(this.date), 'EEEE, MMMM do yyyy') : ''
     },
   },
+
   mounted() {
-    this.getProducts()
     this.getCustomers()
   },
+
   methods: {
+
+    removeFromOrderItem(myOrderIndex) {
+      this.orderItems = this.orderItems.filter(
+        (item, index) => index !== myOrderIndex
+      );
+    },
+
+    updateItem(updateItemObject) {
+      console.log(updateItemObject)
+    },
+
+
+    functionaddOrderItem() {
+      this.orderItems.push(
+        {
+          'pu': 0,
+          'qty': 0,
+          'product_id': 0
+        }
+      )
+    },
     removeAddDialog() {
       this.product_id = "";
       this.dialog = false;
@@ -136,17 +172,6 @@ export default {
       this.stock_quantity = "";
       this.errors = [];
     },
-    async getProducts() {
-      await axios
-        .get(`kcs/api/products/`)
-        .then((response) => {
-          this.products = response.data
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    },
-
     async getCustomers() {
       await axios
         .get(`kcs/api/customers/`)

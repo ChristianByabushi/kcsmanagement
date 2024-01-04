@@ -31,23 +31,7 @@
               <v-col cols="6">
                 <v-select rows="3" outlined :items="customers" item-value="id" item-text="name" hint="Select a supplier"
                   v-model="supplier_id" label="supplier"></v-select>
-              </v-col> 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-              
+              </v-col>
             </v-row>
             <v-row>
               <v-col cols="6">
@@ -94,12 +78,12 @@ export default {
   data() {
     return {
       dialog: false,
-      form: false, 
+      form: false,
       date: format(parseISO(new Date().toISOString()), 'yyyy-MM-dd'),
       menu1: false,
       menu2: false,
-      errors: [], 
-      customers:[],
+      errors: [],
+      customers: [],
       date: format(parseISO(new Date().toISOString()), 'yyyy-MM-dd'),
       customer_id: null,
       stock_quantity: "",
@@ -114,11 +98,9 @@ export default {
   },
   computed: {
     computedDateFormattedMomentjs() {
-      console.log(this.date)
       return this.date ? moment(this.date).format('dddd, MMMM Do YYYY') : ''
     },
     computedDateFormattedDatefns() {
-      console.log(this.date)
       return this.date ? format(parseISO(this.date), 'EEEE, MMMM do yyyy') : ''
     },
   },

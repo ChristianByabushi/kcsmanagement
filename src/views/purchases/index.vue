@@ -140,14 +140,10 @@ export default {
         return acc += curVal.unit_price * curVal.stock_quantity
       }, 0.)
     },
-
-
     computedDateFormattedMomentjs() {
-      console.log(this.date)
       return this.date ? moment(this.date).format('dddd, MMMM Do YYYY') : ''
     },
     computedDateFormattedDatefns() {
-      console.log(this.date)
       return this.date ? format(parseISO(this.date), 'EEEE, MMMM do yyyy') : ''
     },
     NumberOfPage() {
@@ -219,7 +215,7 @@ export default {
         return item.supplier.name
       else
         "supplier not provided"
-        
+
     },
     totalCost(unitprice, stock_quantity) {
       let total = 0

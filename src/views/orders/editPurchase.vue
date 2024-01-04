@@ -103,11 +103,9 @@ export default {
   },
   computed: {
     computedDateFormattedMomentjs() {
-      console.log(this.date)
       return this.date ? moment(this.date).format('dddd, MMMM Do YYYY') : ''
     },
     computedDateFormattedDatefns() {
-      console.log(this.date)
       return this.date ? format(parseISO(this.date), 'EEEE, MMMM do yyyy') : ''
     },
   },
