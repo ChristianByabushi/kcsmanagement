@@ -1,20 +1,44 @@
 import Vue from "vue";
 import Vuex from "vuex";
-
+import axios from "axios";
 Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
     cart: {
       items: [],
-    },
+    }, 
+    orderItems:[], 
+    Allproducts:[],
     isAuthenticated: false,
     token: "",
     isloading: false,
     isloadingData: false,
-    drawer: true,
+    drawer: true, 
   },
 
+  // Like computers, getters properties handle the calculation on state variables
+  getters:{
+    products : state => state.Allproducts,
+    orderItems : state => state.orderItems, 
+    cartTotalPrice: state=> {
+      return state.orderItems.reduce((acc, cartItem) => {
+        return (
+              parseFloat(cartItem.unit_price) * parseFloat(cartItem.quantity)) + acc;
+        }, 0).toFixed(2);
+        
+    },
+
+    listOfProductsRemains: state=> {  
+      var currentproducts = state.Allproducts
+        state.orderItems.forEach(productOnOrderId => {
+          currentproducts = currentproducts.filter(i => i.id !== productOnOrderId.product_id)
+        }); 
+      return currentproducts 
+    },
+  },
+
+  // the mutations are concerned by the instanciation of values in state properties
   mutations: {
     initializeStore(state) {
       if (localStorage.getItem("cart")) {
@@ -33,6 +57,39 @@ export default new Vuex.Store({
 
     setDrawer(state) {
       state.drawer = !state.drawer;
+    },
+
+    UPDATE_PRODUCT_ITEMS(state, payload){
+        state.Allproducts = payload  
+    }, 
+    initializeOrder(state){
+      state.orderItems=[]
+    } ,
+    removeOrderItem(state, indexItemToremove) { 
+      state.orderItems = state.orderItems.filter( 
+        (item, index) => index !== indexItemToremove
+      ); 
+
+    },
+      updateItem(state, updateItemObject) {  
+      const { index, pu, qty, product_id } = updateItemObject;   
+       state.orderItems.forEach((element, indexOfParent) => {
+        if(index==indexOfParent){
+          element.quantity=qty
+          element.unit_price=pu
+          element.product_id=product_id
+        }
+      });
+   },
+
+    addOrderItem(state) { 
+        state.orderItems.push(
+          {
+            unit_price: 0,
+            quantity: 0,
+            product_id: 0
+          }
+        )
     },
 
     addToCart(state, item) {
@@ -75,6 +132,19 @@ export default new Vuex.Store({
     },
   },
 
-  actions: {},
+  // Are concerned by the interactity with the application interface.
+  actions: {
+    async getProducts({commit}) {
+      await axios
+        .get(`kcs/api/products/`)
+        .then((response) => {
+          commit('UPDATE_PRODUCT_ITEMS', response.data)
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+
+  },
   modules: {},
 });

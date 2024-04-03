@@ -3,8 +3,8 @@
         <v-card class="mt-2" elevation="2">
             <v-row no-gatthers>
                 <v-col cols="3 md-6" class="pa-2 ml-2">
-                    <v-text-field class="mt-2 ml-3" v-model="searchFilter" append-icon="mdi-magnify" label="Search" dense
-                        outlined></v-text-field>
+                    <v-text-field class="mt-2 ml-3" v-model="searchFilter" append-icon="mdi-magnify" label="Search"
+                        dense outlined></v-text-field>
                 </v-col>
                 <v-col cols="3 md-6" class="pa-0 ma-0">
                     <v-select class="mt-4 ml-3" outlined dense :items="products" item-value="id" item-text="name"
@@ -13,8 +13,8 @@
                 <v-col cols="3" class="pa-0 ma-0 mt-2 ml-4">
                     <v-menu v-model="menu1" :close-on-content-click="false">
                         <template v-slot:activator="{ on, attrs }">
-                            <v-text-field :value="computedDateFormattedMomentjs" clearable label="Specify the date" readonly
-                                v-bind="attrs" v-on="on" @click:clear="date = null"></v-text-field>
+                            <v-text-field :value="computedDateFormattedMomentjs" clearable label="Specify the date"
+                                readonly v-bind="attrs" v-on="on" @click:clear="date = null"></v-text-field>
                         </template>
                         <v-date-picker v-model="date" @change="menu1 = false"></v-date-picker>
                     </v-menu>
@@ -40,7 +40,7 @@
             <v-expansion-panels focusable>
                 <v-expansion-panel v-for="(itemOrder, index) in orders" :key="itemOrder.id">
                     <v-expansion-panel-header color="grey lighten-6" class="white--text">
-                        <v-row color="purple" > <!-- Check if it's the first iteration -->
+                        <v-row color="purple"> <!-- Check if it's the first iteration -->
                             <v-col cols="2">{{ itemOrder.id }}</v-col>
                             <v-col cols="3">{{ itemOrder.customer.name }}</v-col>
                             <v-col cols="3">{{ itemOrder.total_amount }}</v-col>
@@ -80,8 +80,9 @@
                                     <tr v-for="item in itemOrder.order_items" :key="item.id">
                                         <td>{{ item.id }}</td>
                                         <td>
-                                            <v-img v-if="item.productPurchased.product.get_image !== null" cover height="50"
-                                                width="50" :src="item.productPurchased.product.get_image" alt="">
+                                            <v-img v-if="item.productPurchased.product.get_image !== null" cover
+                                                height="50" width="50" :src="item.productPurchased.product.get_image"
+                                                alt="">
                                             </v-img>
                                             <v-img v-else>
                                                 not found
@@ -126,7 +127,7 @@
         </v-card>
     </v-container>
 </template>
-  
+
 <script>
 import addOrderItem from "./addOrderItem.vue";
 import editOrderItem from "./editOrderItem.vue";
@@ -172,7 +173,7 @@ export default {
         computedDateFormattedDatefns() {
             return this.date ? format(parseISO(this.date), 'EEEE, MMMM do yyyy') : ''
         },
-        
+
         NumberOfPage() {
             return Math.ceil(this.count / this.page_size);
         },
@@ -279,7 +280,7 @@ export default {
             }
 
             await axios
-                .get(`kcs/api/custom-ordering/${pagination}${search}`)
+                .get(`kcs/api/ordering/${pagination}${search}`)
                 .then((response) => {
                     setTimeout(() => this.$store.commit("setIsLoadingData", false), 800);
                     // anticipate the django return
@@ -294,4 +295,3 @@ export default {
     },
 };
 </script>
-  

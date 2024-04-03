@@ -6,7 +6,8 @@
         </td>
         <!-- Name -->
         <td>
-            <v-select :items="products" item-text="name" item-value="id" v-model="product_id"></v-select>
+            <v-select :items="listOfProductsToTreat" @click="beforeSelectiongProduct()"
+                @keydown="afterSelectingProduct()" item-text="name" item-value="id" v-model="product_id"></v-select>
         </td>
         <!-- Pu -->
         <td>
@@ -30,24 +31,32 @@
 </template>
 <script>
 import axios from "axios";
+import { mapGetters } from "vuex";
 name: 'orderItem';
 export default {
     props: {
         orderItem: Object,
-        index: Number
+        index: Number,
     },
     data() {
         return {
-            products: [],
             pu: this.orderItem.pu,
             qty: this.orderItem.qty,
             totalAmount: 0,
             myOrderIndex: 0,
             product_id: this.orderItem.product_id,
+            listOfProductsToTreat: this.products
         };
     },
+    computed: {
+        ...mapGetters(
+            ['products', 'listOfProductsRemains']
+        )
+    },
+    created() {
+        this.$store.dispatch('getProducts');
+    },
     mounted() {
-        this.getProducts()
         this.calculateTotal()
     },
     watch: {
@@ -66,7 +75,6 @@ export default {
 
     },
     methods: {
-
         calculateTotal() {
             const unit_price = parseFloat(this.pu)
             const quantity = parseFloat(this.qty)
@@ -81,26 +89,25 @@ export default {
             this.$emit('removeFromOrderItem', this.myOrderIndex)
         },
 
-        updateParent() {
-            // Emit the updated values to the parent component
-            this.$emit("updateItem", {
-                index: this.index,
-                pu: this.pu,
-                product_id: this.product_id,
-                qty: this.qty
-            });
+        beforeSelectiongProduct() {
+            //at selection 
+            this.listOfProductsToTreat = this.listOfProductsRemains
+        },
+        afterSelectingProduct() {
+            //after
+            this.listOfProductsToTreat = this.products
+            // Intelligently the value of product_id will already have been updated 
+            // here I know that the item has already changed
         },
 
-        async getProducts() {
-            await axios
-                .get(`kcs/api/products/`)
-                .then((response) => {
-                    this.products = response.data
-                    console.log(this.products)
-                })
-                .catch((error) => {
-                    console.log(error);
-                });
+        updateParent() {
+            // Emit the updated values to the parent component 
+            this.$store.commit('updateItem', {
+                index: this.index,
+                pu: parseFloat(this.pu),
+                product_id: parseFloat(this.product_id),
+                qty: parseFloat(this.qty)
+            })
         },
     },
 };

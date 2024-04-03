@@ -7,7 +7,7 @@
         <v-btn text @click="removeAddDialog()">
           Close
         </v-btn>
-        <v-btn dark text :loading="loadingButton" @click="postForAddingOrderItem()" :disabled="!form">
+        <v-btn dark text :loading="loadingButton" @click="postForCreateOrder()" :disabled="!form">
           Save
         </v-btn>
       </v-toolbar-items>
@@ -34,15 +34,17 @@
                   <v-date-picker v-model="date" @change="menu1 = false"></v-date-picker>
                 </v-menu>
               </v-col>
+              <v-col cols="2" class="pa-0 ma-0 mt-2 ml-4">
+                <v-text-field type="number" v-model="deadline" label="Days given until payment"></v-text-field>
+              </v-col>
               <v-col cols="3" class="pa-0 ma-0">
-                <v-select class="ma-0 mt-3 ml-3" no-gatthers rows="3" :items="customers" item-value="id" item-text="name"
-                  hint="This customer is one to whom the products are sold" v-model="customer_id"
+                <v-select class="ma-0 mt-3 ml-2" no-gatthers rows="3" :items="customers" item-value="id"
+                  item-text="name" hint="This customer is one to whom the products are sold" v-model="customer_id"
                   label="Customer"></v-select>
               </v-col>
-              <v-col>
+              <v-col cols="2" class="pt-4">
                 <addClient id="addClientOrder" v-on:getCustomers="getCustomers"></addClient>
               </v-col>
-              <v-spacer></v-spacer>
             </v-row>
             <v-simple-table>
               <template v-slot:default>
@@ -50,7 +52,7 @@
                   <v-row justify="space-between">
                     <h2 class="mt-0 mt-2" cols="8">Order items</h2>
                     <span>
-                      <v-btn class="mt-2" @click="functionaddOrderItem()">
+                      <v-btn class="mt-2" @click="addOrderItem">
                         <v-icon>mdi-plus</v-icon>
                       </v-btn>
                     </span>
@@ -77,22 +79,25 @@
                       <v-icon> mdi-pen </v-icon>
                     </th>
                   </tr>
+
                 </thead>
                 <tbody>
                   <ItemObject v-for="(item, index) in orderItems" v-bind:key="index" v-bind:orderItem="item"
-                    :index="index" v-on:removeFromOrderItem="removeFromOrderItem" @updateItem="updateItem" />
+                    :index="index" v-on:removeFromOrderItem="removeFromOrderItem" />
                 </tbody>
               </template>
             </v-simple-table>
-            <v-row>
-
-            </v-row>
+            <v-card tile elevation="1" class="mt-4 pa-2">
+              <v-card-actions>
+                <strong>Total Amount: {{ cartTotalPrice }} $</strong>
+              </v-card-actions>
+            </v-card>
           </v-form>
         </v-container>
         <div class="error mt-2" v-if="errors.length">
           <v-alert dense type="error" v-for="error in errors" :key="error">{{
-            error
-          }}</v-alert>
+    error
+            }}</v-alert>
         </div>
       </v-card-text>
     </v-card>
@@ -104,6 +109,8 @@ import addClient from "../clients/addClient.vue";
 import ItemObject from "../orders/orderItem.vue"
 import moment from 'moment'
 import { format, parseISO } from 'date-fns'
+import Alert from "@/components/Alert.vue";
+import { Store, mapGetters } from "vuex";
 export default {
   name: "addOrderItem",
   components: { addClient, ItemObject },
@@ -120,8 +127,7 @@ export default {
       customer_id: null,
       stock_quantity: "",
       unit_price: "",
-      products: "",
-      orderItems: [],
+      deadline: 0,
       product_id: "",
       loadingButton: false,
       rules: {
@@ -129,42 +135,48 @@ export default {
       },
     };
   },
+
   computed: {
+    ...mapGetters(['orderItems', 'listOfProductsRemains', 'products', "cartTotalPrice"]
+    ),
+
     computedDateFormattedMomentjs() {
       return this.date ? moment(this.date).format('dddd, MMMM Do YYYY') : ''
     },
     computedDateFormattedDatefns() {
       return this.date ? format(parseISO(this.date), 'EEEE, MMMM do yyyy') : ''
     },
-  },
 
+    workingOutTotalAmount() {
+      let total = 0
+      this.orderItems.forEach(element => {
+        total += element.pu + element.qty
+      });
+      return total
+    },
+  },
+  created() {
+    this.$store.dispatch('getProducts');
+  },
   mounted() {
     this.getCustomers()
   },
 
   methods: {
-
     removeFromOrderItem(myOrderIndex) {
-      this.orderItems = this.orderItems.filter(
-        (item, index) => index !== myOrderIndex
-      );
+      this.$store.commit('removeOrderItem', myOrderIndex)
+
+    },
+    addOrderItem() {
+      if (this.listOfProductsRemains.length)
+        this.$store.commit('addOrderItem')
+      else {
+        alert('Any article remains, please')
+      }
     },
 
-    updateItem(updateItemObject) {
-      console.log(updateItemObject)
-    },
-
-
-    functionaddOrderItem() {
-      this.orderItems.push(
-        {
-          'pu': 0,
-          'qty': 0,
-          'product_id': 0
-        }
-      )
-    },
     removeAddDialog() {
+      this.$store.commit('initializeOrder')
       this.product_id = "";
       this.dialog = false;
       this.unit_price = "";
@@ -172,6 +184,7 @@ export default {
       this.stock_quantity = "";
       this.errors = [];
     },
+
     async getCustomers() {
       await axios
         .get(`kcs/api/customers/`)
@@ -183,29 +196,38 @@ export default {
         });
     },
 
-    async postForAddingOrderItem() {
+    validationMethod() {
+      if (isNaN(this.customer_id) == true) {
+        return false
+      }
+      if (this.orderItems.length <= 0) {
+        return false
+      }
+    },
+
+    async postForCreateOrder() {
       this.loadingButton = true;
       this.errors = [];
       const formData = new FormData()
-      formData.append('product_id', this.product_id)
-      formData.append('customer_id', this.supplier_id)
-      formData.append('unit_price', this.unit_price)
-      formData.append('stock_quantity', this.stock_quantity)
-      formData.append('created_at', this.date)
+      if (this.validationMethod() == false) {
+        return false
+      }
+      const JsonData = {
+        'customer': { 'id': this.customer_id, 'name': "DefaultClient" },
+        'customer_id': this.customer_id,
+        'list_of_order_items': this.orderItems,
+        'created_at': this.date,
+        'deadline': this.deadline
+      }
 
       await axios
-        .post("kcs/api/products-purchased/", formData,
-          {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
-          }
-        )
+        .post("kcs/api/ordering/", JsonData)
         .then((response) => {
-          this.$emit("getPurchases");
+          this.orderItems = []
+          this.customer_id = null
+          this.$emit("getOrders");
           this.dialog = false;
         })
-
         .catch((error) => {
           if (error.response) {
             for (const property in error.response.data) {
@@ -219,6 +241,8 @@ export default {
             }
             this.errors.push("Something went wrong, Please try again");
             console.log(JSON.stringify(error.message));
+            this.loadingButton = false;
+
           }
         })
         .finally(() => {
@@ -228,4 +252,3 @@ export default {
   },
 };
 </script>
-  
