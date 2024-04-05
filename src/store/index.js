@@ -9,7 +9,7 @@ export default new Vuex.Store({
       items: [],
     }, 
     orderItems:[], 
-    Allproducts:[],
+    Allproducts:[], 
     isAuthenticated: false,
     token: "",
     isloading: false,

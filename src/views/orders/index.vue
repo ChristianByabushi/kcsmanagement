@@ -29,10 +29,11 @@
                     <v-expansion-panel-header color="$vuetify.theme.dark ? 'primaryMenu' : 'white'">
                         <v-row> <!-- For all other iterations -->
                             <v-col cols="2">#Id</v-col>
-                            <v-col cols="3">CustomerName</v-col>
-                            <v-col cols="3">TotalAmount</v-col>
-                            <v-col cols="2">Deadline</v-col>
                             <v-col cols="2">Date de l'opération</v-col>
+                            <v-col cols="2">CustomerName</v-col>
+                            <v-col cols="2">Deadline</v-col>
+                            <v-col cols="2">TotalAmount</v-col>
+                            <v-col cols="2">Actions</v-col>
                         </v-row>
                     </v-expansion-panel-header>
                 </v-expansion-panel>
@@ -42,10 +43,18 @@
                     <v-expansion-panel-header color="grey lighten-6" class="white--text">
                         <v-row color="purple"> <!-- Check if it's the first iteration -->
                             <v-col cols="2">{{ itemOrder.id }}</v-col>
-                            <v-col cols="3">{{ itemOrder.customer.name }}</v-col>
-                            <v-col cols="3">{{ itemOrder.total_amount }}</v-col>
+                            <v-col cols="2">{{ itemOrder.formatted_order_date }}</v-col>
+                            <v-col cols="2">{{ itemOrder.customer.name }}</v-col>
                             <v-col cols="2">{{ itemOrder.deadline }}</v-col>
-                            <v-col cols="2">{{ itemOrder.order_date }}</v-col>
+                            <v-col cols="2" class='computeTotalCostOfOrder'>{{
+                        computeTotalCostOfOrder(itemOrder.list_of_order_items) }}</v-col>
+                            <v-col cols=2>
+                                <v-icon medium class="ml-2" color="#f45"> mdi-delete </v-icon>
+                                <v-icon medium class="ml-2" color='white'> mdi-pencil </v-icon>
+                                <v-icon medium class="ml-2" color="primaryMenu" @click="printOrder(itemOrder.id)">
+                                    mdi-printer
+                                </v-icon>
+                            </v-col>
                         </v-row>
                     </v-expansion-panel-header>
                     <v-expansion-panel-content>
@@ -66,34 +75,33 @@
                                             unit_price
                                         </th>
                                         <th class="text-left">
-                                            stock_quantity
+                                            quantity
                                         </th>
-                                        <th class="text-left">
+                                        <th class="text-right">
                                             total cost ($)
                                         </th>
-                                        <th class="text-left">
+                                        <th class="text-right">
                                             Actions
                                         </th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-for="item in itemOrder.order_items" :key="item.id">
+                                    <tr v-for="item in itemOrder.list_of_order_items" :key="item.id">
                                         <td>{{ item.id }}</td>
                                         <td>
-                                            <v-img v-if="item.productPurchased.product.get_image !== null" cover
-                                                height="50" width="50" :src="item.productPurchased.product.get_image"
-                                                alt="">
+                                            <v-img v-if="item.product.get_image !== null" cover height="50" width="50"
+                                                :src="item.product.get_image" alt="">
                                             </v-img>
                                             <v-img v-else>
                                                 not found
                                             </v-img>
                                         </td>
-                                        <td>{{ item.productPurchased.product.name }}</td>
-                                        <td><input type="text" :value="item.unit_price"> </td>
-                                        <td><input type="text" :value="item.quantity"> </td>
-                                        <td>{{ totalCost(item.unit_price, item.quantity) }}</td>
+                                        <td class="text-left">{{ item.product.name }}</td>
+                                        <td class="text-left"><input type="text" :value="item.unit_price"> </td>
+                                        <td class="text-left"><input type="text" :value="item.quantity"> </td>
+                                        <td class="text-right">{{ totalCost(item.unit_price, item.quantity) }}</td>
                                         <td>
-                                            <!-- <editOrderItem :orderObjectFromParent="computedBuildingValues(item)"
+                                            <!--<editOrderItem :orderObjectFromParent="computedBuildingValues(item)"
                                                 v-on:getOrders="getOrders">
                                             </editOrderItem>
                                             <deleteOrderItem :orderObjectFromParent="computedBuildingValues(item)"
@@ -152,7 +160,7 @@ export default {
             selectedProduct: null,
             page: 1,
             count: 0,
-            page_size: 2,
+            page_size: 5,
             itemsPrint: [2, 5, 10, 15, "All"],
         };
     },
@@ -162,14 +170,19 @@ export default {
             return this.orders.length
         },
         countTotalPrice() {
-            return this.orders.reduce((acc, curVal) => {
-                return acc += curVal.unit_price * curVal.stock_quantity
-            }, 0.)
+            var total_amount = 0.0
+            this.orders.forEach(element => {
+                element.list_of_order_items.forEach(item => {
+                    total_amount += item.unit_price * item.quantity
+                });
+            });
+            return total_amount
         },
 
         computedDateFormattedMomentjs() {
             return this.date ? moment(this.date).format('dddd, MMMM Do YYYY') : ''
         },
+
         computedDateFormattedDatefns() {
             return this.date ? format(parseISO(this.date), 'EEEE, MMMM do yyyy') : ''
         },
@@ -232,8 +245,14 @@ export default {
             this.item = false
         },
         computedBuildingValues(item) {
-
             return item
+        },
+
+
+        computeTotalCostOfOrder(listOfItems) {
+            return listOfItems.reduce((acc, currentItem) => {
+                return acc += currentItem.unit_price * currentItem.quantity
+            }, 0.)
         },
         dataConvert(value) {
             return new Date(value)
@@ -244,10 +263,9 @@ export default {
             total = unitprice * stock_quantity
             return total.toFixed(3)
         },
-        dataConvert(value) {
-            return new Date(value)
-        },
-        async getProducts() {
+
+        async getProducts() { 
+
             await axios
                 .get(`kcs/api/products/`)
                 .then((response) => {
@@ -260,6 +278,15 @@ export default {
                 .catch((error) => {
                     console.log(error);
                 });
+        },
+
+        async printOrder(orderItemId) {
+            // the orderType is false because  
+            var params={
+                access_token : this.$store.state.token
+            }
+            var url = [`${axios.defaults.baseURL}kcs/api/order-state/${orderItemId}/?typeOrder=False`] 
+            window.open(url)
         },
 
         async getOrders() {
