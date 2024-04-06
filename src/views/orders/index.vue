@@ -101,12 +101,12 @@
                                         <td class="text-left"><input type="text" :value="item.quantity"> </td>
                                         <td class="text-right">{{ totalCost(item.unit_price, item.quantity) }}</td>
                                         <td>
-                                            <!--<editOrderItem :orderObjectFromParent="computedBuildingValues(item)"
+                                            <editOrderItem :orderObjectFromParent="computedBuildingValues(item)"
                                                 v-on:getOrders="getOrders">
                                             </editOrderItem>
                                             <deleteOrderItem :orderObjectFromParent="computedBuildingValues(item)"
                                                 v-on:getOrders="getOrders">
-                                            </deleteOrderItem> -->
+                                            </deleteOrderItem>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -136,7 +136,8 @@
     </v-container>
 </template>
 
-<script>
+<script> 
+
 import addOrderItem from "./addOrderItem.vue";
 import editOrderItem from "./editOrderItem.vue";
 import deleteOrderItem from "./deletePurchase.vue";
@@ -264,7 +265,7 @@ export default {
             return total.toFixed(3)
         },
 
-        async getProducts() { 
+        async getProducts() {
 
             await axios
                 .get(`kcs/api/products/`)
@@ -281,12 +282,20 @@ export default {
         },
 
         async printOrder(orderItemId) {
-            // the orderType is false because  
-            var params={
-                access_token : this.$store.state.token
-            }
-            var url = [`${axios.defaults.baseURL}kcs/api/order-state/${orderItemId}/?typeOrder=False`] 
-            window.open(url)
+            const config = {
+                responseType: 'blob'
+            };
+
+            axios.get(`kcs/api/order-state/${orderItemId}?typeOrder=False`, config)
+                .then(response => {
+                    const blob = new Blob([response.data], { type: 'application/pdf' });
+                    const pdfUrl = window.URL.createObjectURL(blob);
+                    window.open(pdfUrl);
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+
         },
 
         async getOrders() {
