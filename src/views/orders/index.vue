@@ -80,7 +80,7 @@
                                         <th class="text-right">
                                             total cost ($)
                                         </th>
-                                        <th class="text-right">
+                                        <th class="text-center">
                                             Actions
                                         </th>
                                     </tr>
@@ -101,11 +101,14 @@
                                         <td class="text-left"><input type="text" :value="item.quantity"> </td>
                                         <td class="text-right">{{ totalCost(item.unit_price, item.quantity) }}</td>
                                         <td>
-                                            <editOrderItem :orderObjectFromParent="computedBuildingValues(item)"
+
+                                            <editOrderItem :OrderItemObject="computedBuildingValues(item)"
                                                 v-on:getOrders="getOrders">
                                             </editOrderItem>
-                                            <deleteOrderItem :orderObjectFromParent="computedBuildingValues(item)"
+
+                                            <deleteOrderItem :OrderItemObject="computedBuildingValues(item)"
                                                 v-on:getOrders="getOrders">
+                                                <v-icon>mdi-delete</v-icon>
                                             </deleteOrderItem>
                                         </td>
                                     </tr>
@@ -136,11 +139,10 @@
     </v-container>
 </template>
 
-<script> 
-
+<script>
 import addOrderItem from "./addOrderItem.vue";
 import editOrderItem from "./editOrderItem.vue";
-import deleteOrderItem from "./deletePurchase.vue";
+import deleteOrderItem from "./deleteOrderItem.vue";
 import axios from "axios";
 import moment from 'moment'
 import { format, parseISO } from 'date-fns'
