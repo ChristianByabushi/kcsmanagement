@@ -111,7 +111,7 @@ import axios from "axios";
 import moment from 'moment'
 import { format, parseISO } from 'date-fns'
 export default {
-  components: { addPurchase, editPurchase, deletePurchase },
+  components: {  editPurchase, deletePurchase },
   data() {
     return {
       purchases: [],

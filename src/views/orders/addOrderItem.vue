@@ -106,9 +106,9 @@
 <script>
 import axios from "axios";
 import addClient from "../clients/addClient.vue";
+import { format, parseISO } from 'date-fns'
 import ItemObject from "../orders/orderItem.vue"
 import moment from 'moment'
-import { format, parseISO } from 'date-fns'
 import Alert from "@/components/Alert.vue";
 import { Store, mapGetters } from "vuex";
 export default {
@@ -118,12 +118,11 @@ export default {
     return {
       dialog: false,
       form: false,
-      date: format(parseISO(new Date().toISOString()), 'yyyy-MM-dd'),
       menu1: false,
       menu2: false,
       errors: [],
       customers: [],
-      date: format(parseISO(new Date().toISOString()), 'yyyy-MM-dd'),
+      date: format(parseISO(new Date().toISOString()), 'yyyy-MM-dd'), 
       customer_id: null,
       stock_quantity: "",
       unit_price: "",
