@@ -8,7 +8,9 @@ export default new Vuex.Store({
     cart: {
       items: [],
     }, 
-    orderItems:[], 
+    orderItems:[],  
+    servicesItems:[],  
+    customers:[],
     Allproducts:[], 
     isAuthenticated: false,
     token: "",
@@ -21,6 +23,7 @@ export default new Vuex.Store({
   getters:{
     products : state => state.Allproducts,
     orderItems : state => state.orderItems, 
+    customers : state => state.customers, 
     cartTotalPrice: state=> {
       return state.orderItems.reduce((acc, cartItem) => {
         return (
@@ -62,6 +65,11 @@ export default new Vuex.Store({
     UPDATE_PRODUCT_ITEMS(state, payload){
         state.Allproducts = payload  
     }, 
+
+    UPDATE_CLIENTS(state, payload){
+        state.customers = payload
+    }, 
+
     initializeOrder(state){
       state.orderItems=[]
     } ,
@@ -143,7 +151,17 @@ export default new Vuex.Store({
         .catch((error) => {
           console.log(error);
         });
-    }
+    },
+    async getCustomers({commit}) {
+      await axios
+        .get(`kcs/api/customers/`)
+        .then((response) => {
+          commit('UPDATE_CLIENTS', response.data) 
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
 
   },
   modules: {},

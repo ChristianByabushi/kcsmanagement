@@ -286,7 +286,6 @@ export default {
         },
 
         async getProducts() {
-
             await axios
                 .get(`kcs/api/products/`)
                 .then((response) => {

@@ -120,7 +120,7 @@ export default {
           phoneNumber: this.phoneNumber,
           adresse: this.adresse,
         })
-        .then((response) => {
+        .then((response) => { 
           this.$emit("getCustomers");
           this.dialog = false;
         }) 
