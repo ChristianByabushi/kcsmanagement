@@ -52,7 +52,7 @@
                             <v-col cols="2">{{ itemOrder.customer.name }}</v-col>
                             <v-col cols="2">{{ itemOrder.deadline }}</v-col>
                             <v-col cols="2">{{
-                        computeTotalCostOfOrder(itemOrder.list_of_order_items) }}</v-col>
+                        computeTotalCostOfOrder(itemOrder.order_service_items) }}</v-col>
                             <v-col cols=2>
                                 <deleteOrder :OrderObject="itemOrder" v-on:getOrders="getOrders">
                                 </deleteOrder>
@@ -65,48 +65,34 @@
                         </v-row>
                     </v-expansion-panel-header>
                     <v-expansion-panel-content>
-                        <v-simple-table class="mt-0 ml-2">
+                        <v-simple-table class="mt-0 ml-2 subtable">
                             <template v-slot:default>
                                 <thead>
                                     <tr>
-                                        <th class="text-left">
+                                        <th class="text-left" >
                                             *
                                         </th>
                                         <th class="text-left">
-                                            image
+                                            Category
                                         </th>
                                         <th class="text-left">
-                                            Name
+                                            Description
                                         </th>
                                         <th class="text-left">
-                                            unit_price
+                                            Total_price
                                         </th>
-                                        <th class="text-left">
-                                            quantity
-                                        </th>
-                                        <th class="text-right">
-                                            total cost ($)
-                                        </th>
+
                                         <th class="text-center">
                                             Actions
                                         </th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-for="item in itemOrder.list_of_order_items" :key="item.id">
+                                    <tr v-for="item in itemOrder.order_service_items" :key="item.id">
                                         <td>{{ item.id }}</td>
-                                        <td>
-                                            <v-img v-if="item.product.get_image !== null" cover height="50" width="50"
-                                                :src="item.product.get_image" alt="">
-                                            </v-img>
-                                            <v-img v-else>
-                                                not found
-                                            </v-img>
-                                        </td>
-                                        <td class="text-left">{{ item.product.name }}</td>
-                                        <td class="text-left"><input type="text" :value="item.unit_price"> </td>
-                                        <td class="text-left"><input type="text" :value="item.quantity"> </td>
-                                        <td class="text-right">{{ totalCost(item.unit_price, item.quantity) }}</td>
+                                        <td class="text-left">{{ item.category.name }}</td>
+                                        <td class="text-left">{{ item.description }}</td>
+                                        <td class="text-left"><input type="text" :value="item.total_price"> </td>
                                         <td>
 
                                             <editOrderItem :OrderItemObject="computedBuildingValues(item)"
@@ -130,7 +116,7 @@
                 <div class="text-justify mt-2 ml-0">
                     <v-row class="ma-0">
                         <v-col cols="4" class="mt-2">
-                            ($) Total : {{ countTotalPrice.toFixed(3) }}
+                            ($) Total : {{ countTotalPrice }}
                         </v-col>
                         <v-col cols="3">
                             <v-pagination v-model="page" :length="NumberOfPage" circle></v-pagination>
@@ -185,11 +171,12 @@ export default {
         countTotalPrice() {
             var total_amount = 0.0
             this.orders.forEach(element => {
-                element.list_of_order_items.forEach(item => {
-                    total_amount += item.unit_price * item.quantity
+                element.order_service_items.forEach(item => {
+                    total_amount += parseFloat(item.total_price)
                 });
-            });
-            return total_amount
+            })
+
+            return total_amount.toFixed(3)
         },
 
         computedDateFormattedMomentjs() {
@@ -270,17 +257,15 @@ export default {
             return item
         },
 
-
-        computeTotalCostOfOrder(listOfItems) {
-            return listOfItems.reduce((acc, currentItem) => {
-                return acc += currentItem.unit_price * currentItem.quantity
+        computeTotalCostOfOrder(order_service_items) {
+            return order_service_items.reduce((acc, currentItem) => {
+                return acc += parseFloat(currentItem.total_price)
             }, 0.)
         },
-        dataConvert(value) {
 
+        dataConvert(value) {
             return new Date(value)
         },
-
 
         totalCost(unitprice, stock_quantity) {
             let total = 0
@@ -307,7 +292,7 @@ export default {
             const config = {
                 responseType: 'blob'
             };
-            axios.get(`kcs/api/order-state/${orderItemId}?typeOrder=False`, config)
+            axios.get(`kcs/api/order-state/${orderItemId}?typeOrder=True`, config)
                 .then(response => {
                     const blob = new Blob([response.data], { type: 'application/pdf' });
                     const pdfUrl = window.URL.createObjectURL(blob);
@@ -344,12 +329,13 @@ export default {
             }
 
             await axios
-                .get(`kcs/api/ordering/${pagination}${search}${dateVariables}`)
+                .get(`kcs/api/orders-service/${pagination}${search}${dateVariables}`)
                 .then((response) => {
                     setTimeout(() => this.$store.commit("setIsLoadingData", false), 800);
                     // anticipate the django return
                     this.count = response.data.count
-                    setTimeout(() => (this.orders = response.data.orders), 800);
+                    setTimeout(() => (
+                        this.orders = response.data.orders), 800);
                 })
                 .catch((error) => {
                     console.log(error);
@@ -359,3 +345,11 @@ export default {
     },
 };
 </script>
+
+<style>
+.subtable th {
+    background-color: rgb(222, 222, 238); 
+    color:white;
+    font-size: larger;
+}
+</style>

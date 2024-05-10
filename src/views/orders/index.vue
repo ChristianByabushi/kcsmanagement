@@ -65,7 +65,7 @@
                         </v-row>
                     </v-expansion-panel-header>
                     <v-expansion-panel-content>
-                        <v-simple-table class="mt-0 ml-2">
+                        <v-simple-table class="mt-0 ml-2 subtable">
                             <template v-slot:default>
                                 <thead>
                                     <tr>

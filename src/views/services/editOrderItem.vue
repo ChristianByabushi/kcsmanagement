@@ -7,7 +7,7 @@
     </template>
     <v-card>
       <v-card-title>
-        <span class="text-h6">EDIT ORDER ITEM #({{ OrderItemObject.id }})</span>
+        <span class="text-h6">EDIT SERVICE ORDER ITEM #({{ OrderItemObject.id }})</span>
       </v-card-title>
       <v-card-text>
         <v-container>
@@ -19,18 +19,16 @@
             </v-row>
             <v-row cols="12">
               <v-col cols="4">
-                <v-text-field type="number" label="Unit Price" v-model="unit_price">
+                <v-select :items="$store.state.Allcategories" item-value="id" item-text="name" v-model="category_id"
+                  label="Category"></v-select>
+              </v-col>
+              <v-col cols="4">
+                <v-text-field type="text" label="Description" v-model="description">
                 </v-text-field>
               </v-col>
               <v-col cols="4">
-                <v-text-field type="number" label="Quantity" v-model="quantity">
+                <v-text-field type="number" label="Cost of the service" v-model="total_price">
                 </v-text-field>
-              </v-col>
-              <v-col cols="4" class="mt-0">
-                <label for="totalPriceItem">Total price Item :</label>
-                <h3 id="totalPriceItem">
-                  {{ (unit_price * quantity).toFixed(3) }} $
-                </h3>
               </v-col>
             </v-row>
           </v-form>
@@ -68,8 +66,8 @@ export default {
       dialog: false,
       form: false,
       errors: [],
-      unit_price: this.OrderItemObject.unit_price,
-      quantity: this.OrderItemObject.quantity,
+      category_id: this.OrderItemObject.category.id,
+      total_price: this.OrderItemObject.total_price,
       loadingButton: false,
       id: this.OrderItemObject.id,
       rules: {
@@ -78,6 +76,9 @@ export default {
     };
   },
 
+  created() {
+    this.$store.dispatch('getCategories');
+  },
   methods: {
     removeAddDialog() {
       this.dialog = false;
@@ -87,21 +88,9 @@ export default {
 
     checkIfNotNull() {
       let result = true
-      totalPrice = this.quantity * this.unit_price
-      if ((totalPrice === 0) || isNaN(totalPrice) == True) {
+      if ((this.total_price === 0) || isNaN(this.total_price) == True) {
         this.erros.push('Error: the total price musnt be equals to 0 or Nan')
         return false
-      }
-
-      if (this.quantity == NaN || this.quantity < 0 || this.quantity == undefined) {
-        this.errors.push("Error Quantity:The quantity musn\'t be null or lower than 0")
-        result = false
-      }
-
-
-      if (this.unit_price == NaN || this.unit_price == undefined) {
-        this.errors.push("Error Unit Price:The unit musn\'t be null")
-        result = false
       }
       return result
     },
@@ -110,20 +99,9 @@ export default {
       this.loadingButton = true;
       this.errors = [];
       var result = true
-      this.unit_price = parseFloat(this.unit_price).toFixed(3)
-      this.quantity = parseFloat(this.quantity).toFixed(3)
-      var totalPrice = this.quantity * this.unit_price
+      this.total_price = parseFloat(this.total_price).toFixed(3)
       if ((totalPrice === 0) || isNaN(totalPrice) == true) {
         this.errors.push('Error: the total price musnt be equals to 0 or Nan')
-        result = false
-      }
-      if (this.quantity == NaN || this.quantity <= 0 || this.quantity == undefined) {
-        this.errors.push("Error Quantity:The quantity musn\'t be null or lower than 0")
-        result = false
-      }
-
-      if (this.unit_price == NaN || this.unit_price == undefined) {
-        this.errors.push("Error Unit Price:The unit musn\'t be null")
         result = false
       }
 
@@ -134,7 +112,9 @@ export default {
 
       else {
         await axios
-          .put(`kcs/api/order-item/${this.id}/?unit_price=${this.unit_price}&quantity=${this.quantity}`)
+          .put(`kcs/api/order-item/${this.id}`, {
+            'category_id': this.category_id
+          })
           .then((response) => {
             this.$emit("getOrders");
             this.dialog = false;
