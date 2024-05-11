@@ -2,21 +2,16 @@
   <v-dialog v-model="dialog" persistent max-width="500px">
     <template v-slot:activator="{ on, attrs }">
       <v-btn small class="ma-1" elevation="2" color="primary" icon outlined v-bind="attrs" v-on="on">
-        <v-icon small> mdi-pencil </v-icon>
+        <v-icon small> mdi-plus </v-icon>
       </v-btn>
     </template>
     <v-card>
       <v-card-title>
-        <span class="text-h6">EDIT SERVICE ORDER ITEM #({{ OrderItemObject.id }})</span>
+        <span class="text-h6">ADD SERVICE ON THE ORDER </span>
       </v-card-title>
       <v-card-text>
         <v-container>
           <v-form ref="form" v-model="form">
-            <v-row>
-              <v-col cols="12">
-                <h2 class="text-h6">{{ OrderItemObject.category.name.toUpperCase() }}</h2>
-              </v-col>
-            </v-row>
             <v-row cols="12">
               <v-col cols="6">
                 <v-select :items="$store.state.Allcategories" item-value="id" item-text="name" v-model="category_id"
@@ -26,8 +21,6 @@
                 <v-text-field type="number" label="Cost of the service" v-model="total_price">
                 </v-text-field>
               </v-col>
-            </v-row>
-            <v-row>
               <v-col cols="12">
                 <v-textarea type="text" label="Description" v-model="description">
                 </v-textarea>
@@ -58,10 +51,9 @@
 <script>
 import axios from 'axios';
 export default {
-  name: "editOrderItem",
+  name: "addUniqueServiceItem",
   props: {
-    OrderItemObject: Object,
-    customerOrder_id: null,
+    OrderObject: Object,
   },
 
   data() {
@@ -69,11 +61,10 @@ export default {
       dialog: false,
       form: false,
       errors: [],
-      description: this.OrderItemObject.description,
-      category_id: this.OrderItemObject.category.id,
-      total_price: this.OrderItemObject.total_price,
+      description: '',
+      category_id: null,
+      total_price: 0,
       loadingButton: false,
-      id: this.OrderItemObject.id,
       rules: {
         required: (v) => !!v || " This field is required",
       },
@@ -83,6 +74,11 @@ export default {
   created() {
     this.$store.dispatch('getCategories');
   },
+
+  computed: {
+
+  },
+
   methods: {
     removeAddDialog() {
       this.dialog = false;
@@ -116,10 +112,10 @@ export default {
 
       else {
         await axios
-          .put(`kcs/api/order-item-service/${this.id}/`, {
+          .post(`kcs/api/order-item-service/`, {
             'category_id': this.category_id,
+            'customerOrder_id': this.OrderObject.id,
             'description': this.description,
-            'customerOrder_id': this.customerOrder_id,
             'total_price': this.total_price
           })
           .then((response) => {

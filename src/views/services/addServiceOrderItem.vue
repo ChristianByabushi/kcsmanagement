@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="dialog" fullscreen hide-overlay transition="dialog-bottom-transition">
-    <v-toolbar dark color="extraMenu">
-      <v-toolbar-title>Delivering Order</v-toolbar-title>
+    <v-toolbar dark color="purple">
+      <v-toolbar-title>Delivering Service Order</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <v-btn text @click="removeAddDialog()">
@@ -50,9 +50,9 @@
               <template v-slot:default>
                 <caption class="ma-4">
                   <v-row justify="space-between">
-                    <h2 class="mt-0 mt-2" cols="8">Order items</h2>
+                    <h2 class="mt-0 mt-2" cols="8">Service items</h2>
                     <span>
-                      <v-btn class="mt-2" @click="addOrderItem">
+                      <v-btn class="mt-2" @click="addServiceOrderItem">
                         <v-icon>mdi-plus</v-icon>
                       </v-btn>
                     </span>
@@ -64,16 +64,13 @@
                       #Num
                     </th>
                     <th class="text-left">
-                      Item
+                      Category
                     </th>
                     <th class="text-left">
-                      P.U
+                      Description
                     </th>
                     <th class="text-left">
-                      Qty
-                    </th>
-                    <th class="text-left">
-                      Total
+                      Total-Price
                     </th>
                     <th class="text-left">
                       <v-icon> mdi-pen </v-icon>
@@ -82,14 +79,15 @@
 
                 </thead>
                 <tbody>
-                  <ItemObject v-for="(item, index) in orderItems" v-bind:key="index" v-bind:orderItem="item"
-                    :index="index" v-on:removeFromOrderItem="removeFromOrderItem" />
+                  <ItemObject v-for="(item, index) in servicesOrderItems" v-bind:key="index"
+                    v-bind:orderServiceItem="item" :index="index"
+                    v-on:removeServiceOrderItem="removeServiceOrderItem" />
                 </tbody>
               </template>
             </v-simple-table>
             <v-card tile elevation="1" class="mt-4 pa-2">
               <v-card-actions>
-                <strong>Total Amount: {{ cartTotalPrice }} $</strong>
+                <strong>Total Order Service Amount: {{ cartServiceTotalPrice }} $</strong>
               </v-card-actions>
             </v-card>
           </v-form>
@@ -97,7 +95,7 @@
         <div class="error mt-2" v-if="errors.length">
           <v-alert dense type="error" v-for="error in errors" :key="error">{{
     error
-            }}</v-alert>
+  }}</v-alert>
         </div>
       </v-card-text>
     </v-card>
@@ -107,12 +105,12 @@
 import axios from "axios";
 import addClient from "../clients/addClient.vue";
 import { format, parseISO } from 'date-fns'
-import ItemObject from "../orders/orderItem.vue"
+import ItemObject from "./orderServiceItem.vue"
 import moment from 'moment'
-import Alert from "@/components/Alert.vue";
-import { Store, mapGetters } from "vuex";
+import { mapGetters } from "vuex";
+import { parse } from "date-fns/esm";
 export default {
-  name: "addOrderItem",
+  name: "addServiceOrderItem",
   components: { addClient, ItemObject },
   data() {
     return {
@@ -122,12 +120,10 @@ export default {
       menu2: false,
       errors: [],
       customers: [],
-      date: format(parseISO(new Date().toISOString()), 'yyyy-MM-dd'), 
+      date: format(parseISO(new Date().toISOString()), 'yyyy-MM-dd'),
       customer_id: null,
-      stock_quantity: "",
-      unit_price: "",
       deadline: 0,
-      product_id: "",
+      category_id: "",
       loadingButton: false,
       rules: {
         required: (v) => !!v || " This field is required",
@@ -136,7 +132,7 @@ export default {
   },
 
   computed: {
-    ...mapGetters(['orderItems', 'listOfProductsRemains', 'products', "cartTotalPrice"]
+    ...mapGetters(['servicesOrderItems', 'listOfCategoriesRemaining', 'products', "cartServiceTotalPrice"]
     ),
 
     computedDateFormattedMomentjs() {
@@ -148,98 +144,117 @@ export default {
 
     workingOutTotalAmount() {
       let total = 0
-      this.orderItems.forEach(element => {
+      this.servicesOrderItems.forEach(element => {
         total += element.pu + element.qty
       });
       return total
     },
   },
   created() {
-    this.$store.dispatch('getProducts');
-  },
-  mounted() {
-    this.getCustomers()
+    this.$store.dispatch('getCategories');
+    this.$store.dispatch('getCustomers');
   },
 
   methods: {
-    removeFromOrderItem(myOrderIndex) {
-      this.$store.commit('removeOrderItem', myOrderIndex)
-
+    getCustomers() { return true },
+    removeServiceOrderItem(myOrderIndex) {
+      this.$store.commit('removeServiceOrderItem', myOrderIndex)
     },
-    addOrderItem() {
-      if (this.listOfProductsRemains.length)
-        this.$store.commit('addOrderItem')
+    addServiceOrderItem() {
+      if (this.listOfCategoriesRemaining.length)
+        this.$store.commit('addServiceOrderItem')
       else {
         alert('Any article remains, please')
       }
     },
 
     removeAddDialog() {
-      this.$store.commit('initializeOrder')
-      this.product_id = "";
+      this.$store.commit('initializeServiceOrder')
       this.dialog = false;
-      this.unit_price = "";
-      this.customer_id = "";
-      this.stock_quantity = "";
-      this.errors = [];
+      this.category_id = null,
+        this.errors = [];
     },
 
-    async getCustomers() {
-      this.$store.dispatch('getCustomers');
-    },
 
     validationMethod() {
       if (isNaN(this.customer_id) == true) {
         return false
       }
-      if (this.orderItems.length <= 0) {
-        return false
-      }
+
     },
 
     async postForCreateOrder() {
       this.loadingButton = true;
       this.errors = [];
       const formData = new FormData()
+
       if (this.validationMethod() == false) {
         return false
       }
-      const JsonData = {
-        'customer': { 'id': this.customer_id, 'name': "DefaultClient" },
-        'customer_id': this.customer_id,
-        'list_of_order_items': this.orderItems,
-        'created_at': this.date,
-        'deadline': this.deadline
+
+
+      if (this.servicesOrderItems.length <= 0) {
+        this.errors.push(
+          `The list services items musn't be empty`
+        );
       }
 
-      await axios
-        .post("kcs/api/ordering/", JsonData)
-        .then((response) => {
-          this.orderItems = []
-          this.customer_id = null
-          this.$emit("getOrders");
-          this.dialog = false;
-        })
-        .catch((error) => {
-          if (error.response) {
-            for (const property in error.response.data) {
-              this.errors.push(
-                `${property} : ${error.response.data[property]}`
-              );
-            }
-          } else if (error.message) {
-            for (i in error) {
-              console.log(i);
-            }
-            this.errors.push("Something went wrong, Please try again");
-            console.log(JSON.stringify(error.message));
-            this.loadingButton = false;
+      this.servicesOrderItems.forEach(element => {
+        if (element.total_price <= 0) {
+          this.errors.push(
+            `Item(${(element)}): The total price can't be less than or equals to 0`
+          );
+        }
 
-          }
-        })
-        .finally(() => {
-          this.loadingButton = false;
-        });
+        if (element.description == '') {
+          this.errors.push(
+            `Item (${element.description})The The description of this item is empty`
+          );
+        }
+      });
+
+      if (this.errors.length > 0) {
+        this.loadingButton = false;
+        return false
+      } else {
+        const JsonData = {
+          'customer_id': this.customer_id,
+          'order_service_items': this.servicesOrderItems,
+          'order_date': this.date,
+          'deadline': this.deadline
+        }
+
+        await axios
+          .post("kcs/api/orders-service/", JsonData)
+          .then((response) => {
+            this.customer_id = null
+            this.$emit("getOrders");
+            this.dialog = false;
+          })
+          .catch((error) => {
+            if (error.response) {
+              for (const property in error.response.data) {
+                this.errors.push(
+                  `${property} : ${error.response.data[property]}`
+                );
+              }
+            } else if (error.message) {
+              for (i in error) {
+                console.log(i);
+              }
+              this.errors.push("Something went wrong, Please try again");
+              console.log(JSON.stringify(error.message));
+              this.loadingButton = false;
+
+            }
+          })
+          .finally(() => {
+            this.loadingButton = false;
+          });
+      }
+
+
+
     },
   },
 };

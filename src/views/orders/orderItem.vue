@@ -70,7 +70,9 @@ export default {
         },
 
         product_id(newVal, oldVal) {
-            this.updateParent()
+            this.updateParent() 
+            this.afterSelectingProduct()
+
         },
 
     },
@@ -96,7 +98,7 @@ export default {
         afterSelectingProduct() {
             //after
             this.listOfProductsToTreat = this.products
-            // Intelligently the value of product_id will already have been updated 
+            // Intelligently the value of product_id will already been updated 
             // here I know that the item has already changed
         },
 

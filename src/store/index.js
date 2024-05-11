@@ -9,7 +9,7 @@ export default new Vuex.Store({
       items: [],
     }, 
     orderItems:[],  
-    servicesItems:[],   
+    servicesOrderItems:[],   
     Allcategories:[],
     customers:[],
     Allproducts:[], 
@@ -23,7 +23,9 @@ export default new Vuex.Store({
   // Like computers, getters properties handle the calculation on state variables
   getters:{
     products : state => state.Allproducts,
-    orderItems : state => state.orderItems, 
+    categories : state => state.Allcategories,
+    orderItems : state => state.orderItems,  
+    servicesOrderItems:state => state.servicesOrderItems,
     customers : state => state.customers, 
     cartTotalPrice: state=> {
       return state.orderItems.reduce((acc, cartItem) => {
@@ -33,12 +35,28 @@ export default new Vuex.Store({
         
     },
 
+    cartServiceTotalPrice:    state=> {
+      return state.servicesOrderItems.reduce((acc, cartServiceItem) => {
+        return (
+              parseFloat(cartServiceItem.total_price)) + acc;
+        }, 0).toFixed(2);
+        
+    }, 
+
     listOfProductsRemains: state=> {  
       var currentproducts = state.Allproducts
         state.orderItems.forEach(productOnOrderId => {
           currentproducts = currentproducts.filter(i => i.id !== productOnOrderId.product_id)
         }); 
       return currentproducts 
+    },
+
+    listOfCategoriesRemaining: state=> {  
+      var currentCategories = state.Allcategories
+        state.servicesOrderItems.forEach(CategoryOnOrder => {
+          currentCategories = currentCategories.filter(i => i.id !== CategoryOnOrder.category_id)
+        }); 
+      return currentCategories 
     },
   },
 
@@ -78,8 +96,19 @@ export default new Vuex.Store({
     initializeOrder(state){
       state.orderItems=[]
     } ,
+
+    initializeServiceOrder(state){
+      state.servicesOrderItems=[]
+    } ,
+
     removeOrderItem(state, indexItemToremove) { 
       state.orderItems = state.orderItems.filter( 
+        (item, index) => index !== indexItemToremove
+      ); 
+    },
+    
+    removeServiceOrderItem(state, indexItemToremove) { 
+      state.servicesOrderItems = state.servicesOrderItems.filter( 
         (item, index) => index !== indexItemToremove
       ); 
 
@@ -93,7 +122,18 @@ export default new Vuex.Store({
           element.product_id=product_id
         }
       });
-   },
+   }, 
+
+   updateServiceItem(state, updateServiceItemObject) {  
+    const { index,category_id, description, total_price } = updateServiceItemObject;   
+     state.servicesOrderItems.forEach((element, indexOfParent) => {
+      if(index==indexOfParent){
+        element.description=description
+        element.total_price=total_price 
+        element.category_id=category_id 
+      }
+    });
+ },
 
     addOrderItem(state) { 
         state.orderItems.push(
@@ -105,6 +145,15 @@ export default new Vuex.Store({
         )
     },
 
+    addServiceOrderItem(state) { 
+        state.servicesOrderItems.push(
+          {
+            description: '',
+            total_price: 0, 
+            category_id:null
+          }
+        )
+    },
     addToCart(state, item) {
       //this function return all items which are equals to the product id
       const exists = state.cart.items.filter(
@@ -170,7 +219,7 @@ export default new Vuex.Store({
     async getCategories({commit}) {
       await axios
         .get(`kcs/api/categories/`)
-        .then((response) => {
+        .then((response) => { 
           commit('UPDATE_CATEGORIES', response.data) 
         })
         .catch((error) => {

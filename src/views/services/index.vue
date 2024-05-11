@@ -26,7 +26,7 @@
                     </v-menu>
                 </v-col>
                 <v-col cols="3" class="mr-2" align="end">
-                    <addOrderItem v-on:getOrders="getOrders"></addOrderItem>
+                    <addServiceOrderItem v-on:getOrders="getOrders"></addServiceOrderItem>
                 </v-col>
             </v-row>
             <v-expansion-panels>
@@ -69,7 +69,7 @@
                             <template v-slot:default>
                                 <thead>
                                     <tr>
-                                        <th class="text-left" >
+                                        <th class="text-left">
                                             *
                                         </th>
                                         <th class="text-left">
@@ -95,7 +95,11 @@
                                         <td class="text-left"><input type="text" :value="item.total_price"> </td>
                                         <td>
 
-                                            <editOrderItem :OrderItemObject="computedBuildingValues(item)"
+                                            <addUniqueServiceItem :OrderObject="computedBuildingValues(itemOrder)"
+                                                v-on:getOrders="getOrders">
+                                            </addUniqueServiceItem>
+                                            <editOrderItem :customerOrder_id=itemOrder.id
+                                                :OrderItemObject="computedBuildingValues(item)"
                                                 v-on:getOrders="getOrders">
                                             </editOrderItem>
 
@@ -133,16 +137,17 @@
 </template>
 
 <script>
-import addOrderItem from "./addOrderItem.vue";
+import addServiceOrderItem from "./addServiceOrderItem.vue";
 import editPartOrder from './editPartOrder.vue'
 import editOrderItem from "./editOrderItem.vue";
 import deleteOrderItem from "./deleteOrderItem.vue";
 import deleteOrder from "./deleteOrder.vue";
+import addUniqueServiceItem from "./addUniqueServiceItem.vue";
 import axios from "axios";
 import moment from 'moment'
 import { format, parseISO } from 'date-fns'
 export default {
-    components: { addOrderItem, deleteOrder, editPartOrder, editOrderItem, deleteOrderItem },
+    components: { addServiceOrderItem, addUniqueServiceItem, deleteOrder, editPartOrder, editOrderItem, deleteOrderItem },
     data() {
         return {
             orders: [],
@@ -348,8 +353,8 @@ export default {
 
 <style>
 .subtable th {
-    background-color: rgb(222, 222, 238); 
-    color:white;
+    background-color: rgb(222, 222, 238);
+    color: white;
     font-size: larger;
 }
 </style>

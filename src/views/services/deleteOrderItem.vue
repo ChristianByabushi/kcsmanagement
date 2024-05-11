@@ -7,8 +7,8 @@
     </template>
     <v-card>
       <v-card-title class="text-h5">
-        Do you want to delete the OrderItem :
-        <span> {{ OrderItemObject.product.name }} #({{ OrderItemObject.id }}) </span>
+        Do you want to delete the Service Item:
+        <span> {{ OrderItemObject.category.name }} #({{ OrderItemObject.id }}) </span>
       </v-card-title>
       <v-card-text color="error">Please, if you delete this item, it will impact on all the invoice
       </v-card-text>
@@ -39,7 +39,7 @@ export default {
       this.loadingButton = true;
       this.errors = [];
       await axios
-        .delete(`kcs/api/order-item/${idOrderItem}`)
+        .delete(`kcs/api/order-item-service/${idOrderItem}`)
         .then((response) => {
           this.$emit("getOrders");
           this.dialog = false;
