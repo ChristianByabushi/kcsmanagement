@@ -47,8 +47,8 @@
         <v-list-item v-else :to="{ name: item.link }">
           <v-list-item-icon>
             <v-icon :color="$vuetify.theme.dark ? 'white' : 'primary'">{{
-              item.action
-            }}</v-icon>
+    item.action
+  }}</v-icon>
           </v-list-item-icon>
 
           <v-list-item-title v-text="item.title"> </v-list-item-title>
@@ -96,11 +96,19 @@ export default {
         items: [
           { title: "Orders", link: "orders" },
           { title: "Services", link: "services" },
-          { title: "Clients", link: "clients" },
-          { title: "Payments", link: "payments" },
           { title: "Reports", link: "reports" },
         ],
         title: "Selling",
+      },
+      {
+        action: "mdi-basket",
+        link: "accountability",
+        active: false,
+        items: [
+          { title: "Payments", link: "payments" },
+          { title: "Clients", link: "clients" },
+        ],
+        title: "Acountability",
       },
 
       // {

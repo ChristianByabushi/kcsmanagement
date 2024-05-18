@@ -16,7 +16,7 @@
       <v-expansion-panels focusable>
         <v-expansion-panel v-for="itemsupplier in suppliers" :key="itemsupplier.id">
           <v-expansion-panel-header>{{ itemsupplier.name }}, Adresse:{{ itemsupplier.adresse }}, Phone number: {{
-            itemsupplier.phoneNumber }} </v-expansion-panel-header>
+              itemsupplier.phoneNumber }} </v-expansion-panel-header>
           <v-expansion-panel-content>
             <v-row>
               <v-col cols="10">
@@ -103,7 +103,13 @@ export default {
 
   computed: {
     NumberOfPage() {
-      return Math.ceil(this.count / this.page_size);
+      if (this.page_size == 'All') {
+        return 1
+      }
+      let answer = Math.ceil(parseInt(this.count) / parseInt(this.page_size));
+      if (answer < 1)
+        answer = 1
+      return answer
     },
   },
 

@@ -92,7 +92,13 @@ export default {
 
   computed: {
     NumberOfPage() {
-      return Math.ceil(this.count / this.page_size);
+      if (this.page_size == 'All') {
+                return 1
+            }
+            let answer = Math.ceil(parseInt(this.count) / parseInt(this.page_size));
+            if (answer < 1)
+                answer = 1
+            return answer
     },
   },
 

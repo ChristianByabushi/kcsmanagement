@@ -107,8 +107,18 @@ export default {
 
   computed: {
     NumberOfPage() {
-      return Math.ceil(this.count / this.page_size);
-    },
+      let answer = 0
+      if (this.page_size == 'All') {
+         answer = 1;
+        return this
+      } else {
+         answer = Math.ceil(parseInt(this.count) / parseInt(this.page_size));
+      }
+
+      if (answer < 1)
+        answer = 1
+      return answer
+    }, 
   },
 
   //most used when the property changes for calling the api

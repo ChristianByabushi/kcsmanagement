@@ -2,28 +2,35 @@
   <v-dialog v-model="dialog" persistent max-width="500px">
     <template v-slot:activator="{ on, attrs }">
       <v-btn small class="ma-1" elevation="2" color="primary" icon outlined v-bind="attrs" v-on="on">
-        <v-icon small> mdi-plus </v-icon>
+        <v-icon small> mdi-pencil </v-icon>
       </v-btn>
     </template>
     <v-card>
       <v-card-title>
-        <span class="text-h6">ADD SERVICE ON THE ORDER </span>
+        <span class="text-h6">EDIT ORDER ITEM #({{ OrderItemObject.id }})</span>
       </v-card-title>
       <v-card-text>
         <v-container>
           <v-form ref="form" v-model="form">
-            <v-row cols="12">
-              <v-col cols="6">
-                <v-select :items="$store.state.Allcategories" item-value="id" item-text="name" v-model="category_id"
-                  label="Category"></v-select>
+            <v-row>
+              <v-col cols="12">
+                <h2 class="text-h6">{{ OrderItemObject.product.name.toUpperCase() }}</h2>
               </v-col>
-              <v-col cols="6">
-                <v-text-field type="number" label="Cost of the service" v-model="total_price">
+            </v-row>
+            <v-row cols="12">
+              <v-col cols="4">
+                <v-text-field type="number" label="Unit Price" v-model="unit_price">
                 </v-text-field>
               </v-col>
-              <v-col cols="12">
-                <v-textarea type="text" label="Description" v-model="description">
-                </v-textarea>
+              <v-col cols="4">
+                <v-text-field type="number" label="Quantity" v-model="quantity">
+                </v-text-field>
+              </v-col>
+              <v-col cols="4" class="mt-0">
+                <label for="totalPriceItem">Total price Item :</label>
+                <h3 id="totalPriceItem">
+                  {{ (unit_price * quantity).toFixed(3) }} $
+                </h3>
               </v-col>
             </v-row>
           </v-form>
@@ -51,9 +58,9 @@
 <script>
 import axios from 'axios';
 export default {
-  name: "addUniqueServiceItem",
+  name: "editOrderItem",
   props: {
-    OrderObject: Object,
+    OrderItemObject: Object,
   },
 
   data() {
@@ -61,22 +68,14 @@ export default {
       dialog: false,
       form: false,
       errors: [],
-      description: '',
-      category_id: null,
-      total_price: 0,
+      unit_price: this.OrderItemObject.unit_price,
+      quantity: this.OrderItemObject.quantity,
       loadingButton: false,
+      id: this.OrderItemObject.id,
       rules: {
         required: (v) => !!v || " This field is required",
       },
     };
-  },
-
-  created() {
-    this.$store.dispatch('getCategories'); 
-  },
-
-  computed: {
-
   },
 
   methods: {
@@ -88,9 +87,21 @@ export default {
 
     checkIfNotNull() {
       let result = true
-      if ((this.total_price === 0) || isNaN(this.total_price) == True) {
+      totalPrice = this.quantity * this.unit_price
+      if ((totalPrice === 0) || isNaN(totalPrice) == True) {
         this.erros.push('Error: the total price musnt be equals to 0 or Nan')
         return false
+      }
+
+      if (this.quantity == NaN || this.quantity < 0 || this.quantity == undefined) {
+        this.errors.push("Error Quantity:The quantity musn\'t be null or lower than 0")
+        result = false
+      }
+
+
+      if (this.unit_price == NaN || this.unit_price == undefined) {
+        this.errors.push("Error Unit Price:The unit musn\'t be null")
+        result = false
       }
       return result
     },
@@ -99,9 +110,20 @@ export default {
       this.loadingButton = true;
       this.errors = [];
       var result = true
-      this.total_price = parseFloat(this.total_price).toFixed(3)
-      if ((this.total_price === 0) || isNaN(this.total_price) == true) {
+      this.unit_price = parseFloat(this.unit_price).toFixed(3)
+      this.quantity = parseFloat(this.quantity).toFixed(3)
+      var totalPrice = this.quantity * this.unit_price
+      if ((totalPrice === 0) || isNaN(totalPrice) == true) {
         this.errors.push('Error: the total price musnt be equals to 0 or Nan')
+        result = false
+      }
+      if (this.quantity == NaN || this.quantity <= 0 || this.quantity == undefined) {
+        this.errors.push("Error Quantity:The quantity musn\'t be null or lower than 0")
+        result = false
+      }
+
+      if (this.unit_price == NaN || this.unit_price == undefined) {
+        this.errors.push("Error Unit Price:The unit musn\'t be null")
         result = false
       }
 
@@ -112,12 +134,7 @@ export default {
 
       else {
         await axios
-          .post(`kcs/api/order-item-service/`, {
-            'category_id': this.category_id,
-            'customerOrder_id': this.OrderObject.id,
-            'description': this.description,
-            'total_price': this.total_price
-          })
+          .put(`kcs/api/order-item/${this.id}/?unit_price=${this.unit_price}&quantity=${this.quantity}`)
           .then((response) => {
             this.$emit("getOrders");
             this.dialog = false;

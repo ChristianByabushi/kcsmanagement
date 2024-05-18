@@ -3,11 +3,11 @@
     <v-container>
       <template>
         <v-card>
-          <v-toolbar color="extraMenu" dark flat>
-            <v-toolbar-title>Selling</v-toolbar-title>
+          <v-toolbar color="#303f9f" dark flat>
+            <v-toolbar-title>Accountability</v-toolbar-title>
             <template v-slot:extension>
               <v-tabs class="d-flex justify-center" v-model="tab" align-with-title>
-                <v-tabs-slider color="$vuetify.theme.dark ? 'extraMenu' : 'white'"></v-tabs-slider>
+                <v-tabs-slider color="$vuetify.theme.dark ? '#303f9f' : 'white'"></v-tabs-slider>
                 <v-tab v-for="(item, index) in items" :key="index" :to="item.link">
                   {{ item.name }}
                 </v-tab>
@@ -16,19 +16,14 @@
           </v-toolbar>
 
           <v-tabs-items v-model="tab">
-            <v-tab-item value="orders">
+            <v-tab-item value="payments">
               <v-card flat>
-                <Orders></Orders>
+                <Payments></Payments>
               </v-card>
             </v-tab-item>
-            <v-tab-item value="services">
+            <v-tab-item value="clients">
               <v-card flat>
-                <Services></Services>
-              </v-card>
-            </v-tab-item>
-            <v-tab-item value="reports">
-              <v-card flat>
-                <Reports></Reports>
+                <Clients></Clients>
               </v-card>
             </v-tab-item>
           </v-tabs-items>
@@ -37,12 +32,10 @@
     </v-container>
   </div>
 </template>
-
 <script>
 import axios from "axios";
-import Orders from "@/views/orders/index.vue";
-import Services from "@/views/services/index.vue";
-import Reports from "@/views/reports/index.vue"
+import Clients from "@/views/clients/index.vue";
+import Payments from "@/views/accountability/payments.vue"
 export default {
   name: "HomeSelling",
   data: () => ({
@@ -54,26 +47,22 @@ export default {
     tab: null,
     items: [
       {
-        name: "Orders",
-        link: "orders",
+        name: "Payments",
+        link: "payments",
       },
       {
-        name: "Services",
-        link: "services",
+        name: "Clients",
+        link: "clients",
       },
 
-      {
-        name: "Reports",
-        link: "reports",
-      },
     ],
     text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
   }),
-  components: { Orders, Reports, Services },
+  components: { Payments, Clients },
 
   mounted() {
     // this.getLastestProducts();
-    document.title = "Selling" + "| KCS";
+    document.title = "Accountability" + "| KCS";
   },
 
   watch: {

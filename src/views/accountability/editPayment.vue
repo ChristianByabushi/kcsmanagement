@@ -1,30 +1,37 @@
 <template>
   <v-dialog v-model="dialog" persistent max-width="500px">
     <template v-slot:activator="{ on, attrs }">
-      <v-btn small class="ma-1" elevation="2" color="primary" icon outlined v-bind="attrs" v-on="on">
-        <v-icon small> mdi-plus </v-icon>
+      <v-btn small class="ma-1" elevation="2" color="indigo" icon outlined v-bind="attrs" v-on="on">
+        <v-icon small> mdi-pencil </v-icon>
       </v-btn>
     </template>
     <v-card>
-      <v-card-title>
-        <span class="text-h6">ADD SERVICE ON THE ORDER </span>
+      <v-card-title class="indigo">
+        <span style="color: white;">
+          EDIT PAYMENT OF THE ORDER #({{ OrderObject.id }})-PAY(#{{ payementItem.id }})
+        </span>
       </v-card-title>
       <v-card-text>
         <v-container>
           <v-form ref="form" v-model="form">
-            <v-row cols="12">
-              <v-col cols="6">
-                <v-select :items="$store.state.Allcategories" item-value="id" item-text="name" v-model="category_id"
-                  label="Category"></v-select>
-              </v-col>
-              <v-col cols="6">
-                <v-text-field type="number" label="Cost of the service" v-model="total_price">
-                </v-text-field>
-              </v-col>
+            <v-row>
               <v-col cols="12">
-                <v-textarea type="text" label="Description" v-model="description">
-                </v-textarea>
+                <h2 class="text-h6">Client : {{ OrderObject.customer.name }}</h2>
+                <h3 class="text-h6">Cost of All the order : {{ OrderObject.total_amount }} ($)</h3>
+                <h3 class="text-h6"> Amount already paid: {{ paidAmountOrder }} ($)</h3>
+                <h3 class="text-h6">Date of the operation: {{ OrderObject.order_date }}</h3>
               </v-col>
+              <v-col cols="6">
+                <label for="amount_paid">Amount Payment to edit ($)</label>
+                <v-text-field class="mt-0" :rules="[rules.required]" id="amount_paid" type="number"
+                  v-model="amount_paid"></v-text-field>
+              </v-col>
+              <v-col cols="6">
+                <label for="amount_remaining">The amount remaining ($)</label>
+                <h2 class="mt-6 text-center" id="amount_remaining">{{ OrderObject.total_amount - amount_paid -
+    paidAmountOrder }}</h2>
+              </v-col>
+
             </v-row>
           </v-form>
         </v-container>
@@ -40,8 +47,8 @@
         <v-btn color="blue darken-1" text @click="removeAddDialog()">
           Close
         </v-btn>
-        <v-btn :loading="loadingButton" color="blue darken-1" text @click="editOrderItem()">
-          Save
+        <v-btn :loading="loadingButton" color="blue darken-1" text @click="editPayment()">
+          Confirm Edit Pay.
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -51,9 +58,11 @@
 <script>
 import axios from 'axios';
 export default {
-  name: "addUniqueServiceItem",
+  name: "editPayment",
   props: {
     OrderObject: Object,
+    paidAmountOrder: 0,
+    payementItem: Object,
   },
 
   data() {
@@ -61,22 +70,13 @@ export default {
       dialog: false,
       form: false,
       errors: [],
-      description: '',
-      category_id: null,
-      total_price: 0,
+      amount_paid: this.payementItem.amount_paid,
+      idOrder: this.OrderObject.id,
       loadingButton: false,
       rules: {
         required: (v) => !!v || " This field is required",
       },
     };
-  },
-
-  created() {
-    this.$store.dispatch('getCategories'); 
-  },
-
-  computed: {
-
   },
 
   methods: {
@@ -88,23 +88,22 @@ export default {
 
     checkIfNotNull() {
       let result = true
-      if ((this.total_price === 0) || isNaN(this.total_price) == True) {
-        this.erros.push('Error: the total price musnt be equals to 0 or Nan')
+      if ((this.amount_paid === 0) || isNaN(amount_paid) == True) {
+        this.erros.push('Error: the amount_paid musnt be equals to 0 or Nan')
         return false
       }
       return result
     },
 
-    async editOrderItem() {
+    async editPayment() {
       this.loadingButton = true;
       this.errors = [];
       var result = true
-      this.total_price = parseFloat(this.total_price).toFixed(3)
-      if ((this.total_price === 0) || isNaN(this.total_price) == true) {
+      let amount_paid = parseFloat(this.amount_paid).toFixed(3)
+      if ((amount_paid === 0) || isNaN(amount_paid) == true) {
         this.errors.push('Error: the total price musnt be equals to 0 or Nan')
         result = false
       }
-
       if (result == false) {
         this.loadingButton = false;
         return false
@@ -112,17 +111,16 @@ export default {
 
       else {
         await axios
-          .post(`kcs/api/order-item-service/`, {
-            'category_id': this.category_id,
-            'customerOrder_id': this.OrderObject.id,
-            'description': this.description,
-            'total_price': this.total_price
-          })
+          .put(`kcs/api/payment-order/?id=${this.payementItem.id}`,
+            {
+              "amount_paid": this.amount_paid,
+              "purchase_order_id": this.idOrder
+            })
           .then((response) => {
-            this.$emit("getOrders");
+            this.$emit("getOrderPayments");
+            this.loadingButton = false;
             this.dialog = false;
           })
-
           .catch((error) => {
             if (error.response) {
               for (const property in error.response.data) {

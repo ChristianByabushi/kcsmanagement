@@ -3,8 +3,9 @@
         <v-card class="mt-2" elevation="2">
             <v-row no-gatthers>
                 <v-col class="pa-2 ml-2">
-                    <v-text-field class="mt-2 ml-3" v-model="searchFilter" append-icon="mdi-magnify" label="Search"
-                        dense outlined></v-text-field>
+
+                    <v-select rows="3" outlined :items="$store.state.customers" item-value="id" item-text="name"
+                        hint="Select Client" v-model="selectedClient" label="Client"></v-select>
                 </v-col>
                 <v-col cols='3' class="pa-0 ma-0 mt-2 ml-4">
                     <v-menu v-model="menu1" :close-on-content-click="false">
@@ -26,7 +27,7 @@
                     </v-menu>
                 </v-col>
                 <v-col cols="3" class="mr-2" align="end">
-                    <addServiceOrderItem v-on:getOrders="getOrders"></addServiceOrderItem>
+                    <!--     <addServiceOrderItem v-on:getOrders="getOrders"></addServiceOrderItem> -->
                 </v-col>
             </v-row>
             <v-expansion-panels>
@@ -54,13 +55,20 @@
                             <v-col cols="2">{{
                         computeTotalCostOfOrder(itemOrder.order_service_items) }}</v-col>
                             <v-col cols=2>
-                                <deleteOrder :OrderObject="itemOrder" v-on:getOrders="getOrders">
+                                <!-- 
+
+
+                                <deleteOrder :OrderObject="itemOrder" v-on:getOrderPayments="getOrderPayments">
                                 </deleteOrder>
-                                <editPartOrder :OrderObject="itemOrder" v-on:getOrders="getOrders">
+                                <editPartOrder :OrderObject="itemOrder" v-on:getOrderPayments="getOrderPayments">
                                 </editPartOrder>
                                 <v-icon medium class="ml-2" color="primaryMenu" @click="printOrder(itemOrder.id)">
                                     mdi-printer
-                                </v-icon>
+                                </v-icon> 
+                                
+    
+-->
+
                             </v-col>
                         </v-row>
                     </v-expansion-panel-header>
@@ -94,19 +102,21 @@
                                         <td class="text-left">{{ item.description }}</td>
                                         <td class="text-left"><input type="text" :value="item.total_price"> </td>
                                         <td>
-
+                                            <!-- 
                                             <addUniqueServiceItem :OrderObject="computedBuildingValues(itemOrder)"
-                                                v-on:getOrders="getOrders">
+                                                v-on:getOrderPayments="getOrderPayments">
                                             </addUniqueServiceItem>
                                             <editOrderItem :customerOrder_id=itemOrder.id
                                                 :OrderItemObject="computedBuildingValues(item)"
-                                                v-on:getOrders="getOrders">
+                                                v-on:getOrderPayments="getOrderPayments">
                                             </editOrderItem>
 
                                             <deleteOrderItem :OrderItemObject="computedBuildingValues(item)"
-                                                v-on:getOrders="getOrders">
+                                                v-on:getOrderPayments="getOrderPayments">
                                                 <v-icon>mdi-delete</v-icon>
-                                            </deleteOrderItem>
+                                            </deleteOrderItem> 
+-->
+
                                         </td>
                                     </tr>
                                 </tbody>
@@ -150,12 +160,13 @@ export default {
     components: { addServiceOrderItem, addUniqueServiceItem, deleteOrder, editPartOrder, editOrderItem, deleteOrderItem },
     data() {
         return {
+            orderPayments: [],
             orders: [],
             date: format(parseISO(new Date().toISOString()), 'yyyy-MM-dd'),
             dateto: format(parseISO(new Date().toISOString()), 'yyyy-MM-dd'),
             menu1: false,
             menu2: false,
-            search: "",
+            selectedClient: 0,
             counterHeader: 0,
             products: [],
             orders: [],
@@ -230,7 +241,7 @@ export default {
     watch: {
         page: {
             handler() {
-                this.getOrders();
+                this.getOrderPayments();
             },
             //this property will mount the categories
             immediate: true,
@@ -238,27 +249,32 @@ export default {
 
         page_size: {
             handler() {
-                this.getOrders();
+                this.getOrderPayments();
             },
         },
 
         date: {
             handler() {
-                this.getOrders()
+                this.getOrderPayments()
             }
         },
         dateto: {
             handler() {
-                this.getOrders()
+                this.getOrderPayments()
             }
         },
-        search: function (newValue, olValue) {
-            this.getOrders();
+        selectedClient: {
+            handler() {
+                this.getOrderPayments()
+            }
         },
     },
     async mounted() {
-        this.getProducts()
-        this.getOrders()
+        this.getOrderPayments()
+    },
+    created() {
+        this.$store.dispatch('getCustomers');
+
     },
     methods: {
         titleCountOrder() {
@@ -284,63 +300,35 @@ export default {
             return total.toFixed(3)
         },
 
-        async getProducts() {
-            await axios
-                .get(`kcs/api/products/`)
-                .then((response) => {
-                    this.products = response.data
-                    this.products.push({
-                        'id': null,
-                        'name': "All products"
-                    })
-                })
-                .catch((error) => {
-                    console.log(error);
-                });
-        },
-
-        async printOrder(orderItemId) {
-            const config = {
-                responseType: 'blob'
-            };
-            axios.get(`kcs/api/order-state/${orderItemId}?typeOrder=True`, config)
-                .then(response => {
-                    const blob = new Blob([response.data], { type: 'application/pdf' });
-                    const pdfUrl = window.URL.createObjectURL(blob);
-                    window.open(pdfUrl);
-                })
-                .catch(error => {
-                    console.error(error);
-                });
-        },
-
-        async getOrders() {
-            if (this.search === "") {
-                this.$store.commit("setIsLoadingData", true);
-            }
-
+        async getOrderPayments() {
+            this.$store.commit("setIsLoadingData", true);
             let pagination = ``;
             let search = ``;
+
             if (this.page_size === "All") {
-                this.page_size = this.count;
+                pagination = `?created_at=${this.date}&page=${this.page}&perpage=${this.count}`;
+
             } else {
                 pagination = `?created_at=${this.date}&page=${this.page}&perpage=${this.page_size}`;
             }
 
-            var dateVariables = ''
-            if (this.search != "") {
-                search = `&search=${this.search}`;
+            var dateVariables = '' 
+            this.selectedClient=37 
+
+            if (this.selectedClient != "") { 
+                search = `&client_id=${this.selectedClient}`;
             }
+
             if (this.date != null) {
-                dateVariables = `&datelimitleft=${this.date}`
+                dateVariables = `&orderDateFrom=${this.date}`
             }
 
             if (this.dateto != null) {
-                dateVariables += `&datelimitright=${this.dateto}`
+                dateVariables += `&orderDateTo=${this.dateto}`
             }
-
+            search = `&client_id=${4}`
             await axios
-                .get(`kcs/api/orders-service/${pagination}${search}${dateVariables}`)
+                .get(`kcs/api/payment-order/${pagination}${search}${dateVariables}`)
                 .then((response) => {
                     setTimeout(() => this.$store.commit("setIsLoadingData", false), 800);
                     // anticipate the django return

@@ -32,20 +32,11 @@ const routes = [
       component: () => import("@/views/orders/index.vue"),
     },
     {
-      path: "payments",
-      name: "payments",
-      component: () => import("@/views/payments/index.vue"),
-    },
-    {
       path: "services",
       name: "services",
       component: () => import("@/views/services/index.vue"),
     },
-    {
-      path: "clients",
-      name: "clients",
-      component: () => import("@/views/clients/index.vue"),
-    },
+
     {
       path: "reports",
       name: "reports",
@@ -57,6 +48,35 @@ const routes = [
   },
 
 },
+
+{
+  path: "/accountability",
+  name: "accountability", 
+  component: () => import("@/views/accountability/Home.vue"),
+  children: [
+    {
+      path: "payments",
+      name: "payments",
+      component: () => import("@/views/accountability/payments.vue"),
+    },
+    {
+      path: "clients",
+      name: "clients",
+      component: () => import("@/views/clients/index.vue"),
+    },
+    {
+      path: "reports",
+      name: "reports",
+      component: () => import("@/views/reports/index.vue"),
+    },
+  ], 
+
+  meta: {
+    requireLogin: true,
+  },
+
+},
+
   //provisioning
   {
     path: "/provisioning",
@@ -89,14 +109,7 @@ const routes = [
     },
   },
 
-  // {
-  //   path: "/approvisionnement",
-  //   name: "approvisionnement",
-  //   component: Product,
-  //   meta: {
-  //     requireLogin: true,
-  //   },
-  // },
+
 
   {
     path: "/my-account",

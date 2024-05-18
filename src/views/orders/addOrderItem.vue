@@ -209,6 +209,7 @@ export default {
         'customer_id': this.customer_id,
         'list_of_order_items': this.orderItems,
         'created_at': this.date,
+        'order_date': this.date,
         'deadline': this.deadline
       }
 
