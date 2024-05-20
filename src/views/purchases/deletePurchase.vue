@@ -1,15 +1,7 @@
 <template>
   <v-dialog v-model="dialog" persistent max-width="290">
     <template v-slot:activator="{ on, attrs }">
-      <v-btn
-        class="mt-2 ml-1"
-        elevation="2"
-        color="error"
-        icon
-        outlined
-        v-bind="attrs"
-        v-on="on"
-      >
+      <v-btn class="mt-2 ml-1" elevation="2" color="error" icon outlined v-bind="attrs" v-on="on">
         <v-icon small> mdi-delete </v-icon>
       </v-btn>
     </template>
@@ -18,19 +10,13 @@
         Do you want to delete the stock-item :
         <span> {{ PurchaseObjectFromParent.product.name }} </span>
       </v-card-title>
-      <v-card-text color="error"
-        >Please, Remember that every product conatined by this category will get
+      <v-card-text color="error">Please, Remember that every product conatined by this category will get
         null value
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn color="primary" text @click="dialog = false"> Disagree </v-btn>
-        <v-btn
-          color="error"
-          :loading="loadingButton"
-          text
-          @click="deletCategory(PurchaseObjectFromParent.id)"
-        >
+        <v-btn color="error" :loading="loadingButton" text @click="deleteProductPurchased(PurchaseObjectFromParent.id)">
           Agree
         </v-btn>
       </v-card-actions>
@@ -51,11 +37,11 @@ export default {
     };
   },
   methods: {
-    async deletCategory(Categoryid) {
+    async deleteProductPurchased(id) {
       this.loadingButton = true;
       this.errors = [];
       await axios
-        .delete(`kcs/api/products-purchased/${Categoryid}`)
+        .delete(`kcs/api/products-purchased/${id}/`)
         .then((response) => {
           this.$emit("getPurchases");
           this.dialog = false;

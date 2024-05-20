@@ -315,7 +315,8 @@ export default {
                 });
         },
 
-        async getOrders() {
+        async getOrders() { 
+            
             if (this.search === "") {
                 this.$store.commit("setIsLoadingData", true);
             }

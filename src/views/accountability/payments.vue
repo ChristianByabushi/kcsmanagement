@@ -96,16 +96,14 @@
                                         <td class="text-left">{{ item.amount_paid }}</td>
                                         <td>
                                             <editPayment :OrderObject="itemOrder.orderPayment"
-                                                :paidAmountOrder="itemOrder.paidAmountOrder"
-                                                :payementItem="item" v-on:getOrderPayments="getOrderPayments">
-                                            </editPayment>
-                                            <!-- 
-
-                                            <deleteOrderItem :OrderItemObject="computedBuildingValues(item)"
+                                                :paidAmountOrder="itemOrder.paidAmountOrder" :payementItem="item"
                                                 v-on:getOrderPayments="getOrderPayments">
-                                                <v-icon>mdi-delete</v-icon>
-                                            </deleteOrderItem> 
--->
+                                            </editPayment>
+                                            <deletePayment :OrderObject="itemOrder.orderPayment"
+                                                :paidAmountOrder="itemOrder.paidAmountOrder" :payementItem="item"
+                                                v-on:getOrderPayments="getOrderPayments">
+                                            </deletePayment>
+
                                         </td>
                                     </tr>
                                 </tbody>
@@ -142,9 +140,11 @@
 import axios from "axios";
 import moment from 'moment'
 import editPayment from './editPayment.vue'
+import addPayment from './addPayment.vue'
+import deletePayment from './deletePayment.vue'
 import { format, parseISO } from 'date-fns'
 export default {
-    components: { editPayment },
+    components: { editPayment, addPayment, deletePayment },
     data() {
         return {
             orderPayments: [],

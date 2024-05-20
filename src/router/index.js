@@ -38,9 +38,9 @@ const routes = [
     },
 
     {
-      path: "reports",
-      name: "reports",
-      component: () => import("@/views/reports/index.vue"),
+      path: "store",
+      name: "store",
+      component: () => import("@/views/store/index.vue"),
     },
   ],
   meta: {

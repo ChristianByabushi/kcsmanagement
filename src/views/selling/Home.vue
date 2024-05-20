@@ -26,9 +26,9 @@
                 <Services></Services>
               </v-card>
             </v-tab-item>
-            <v-tab-item value="reports">
+            <v-tab-item value="store">
               <v-card flat>
-                <Reports></Reports>
+                <Store></Store>
               </v-card>
             </v-tab-item>
           </v-tabs-items>
@@ -42,7 +42,7 @@
 import axios from "axios";
 import Orders from "@/views/orders/index.vue";
 import Services from "@/views/services/index.vue";
-import Reports from "@/views/reports/index.vue"
+import Store from "@/views/store/index.vue"
 export default {
   name: "HomeSelling",
   data: () => ({
@@ -63,13 +63,13 @@ export default {
       },
 
       {
-        name: "Reports",
-        link: "reports",
+        name: "Store",
+        link: "store",
       },
     ],
     text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
   }),
-  components: { Orders, Reports, Services },
+  components: { Orders, Store, Services },
 
   mounted() {
     // this.getLastestProducts();

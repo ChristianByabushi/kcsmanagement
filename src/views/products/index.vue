@@ -13,7 +13,7 @@
         <v-spacer></v-spacer>
         <v-col cols="2" class="mr-7" align="end">
           <addProduct v-on:getProducts="getProducts"></addProduct>
-        </v-col>
+        </v-col> 
       </v-row>
       <v-simple-table class="mt-0 ml-2">
         <template v-slot:default>
@@ -49,7 +49,7 @@
             <tr v-for="item in filteredItems" :key="item.id">
               <td>{{ item.id }}</td>
               <td>
-                <v-img v-if="item.image !== null" cover height="50" width="50" :src="item.image" alt="">
+                <v-img v-if="item.get_image !== null" cover height="50" width="50" :src="item.get_image" alt="">
                 </v-img>
                 <v-img v-else>
                   not found

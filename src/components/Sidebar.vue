@@ -96,7 +96,7 @@ export default {
         items: [
           { title: "Orders", link: "orders" },
           { title: "Services", link: "services" },
-          { title: "Reports", link: "reports" },
+          { title: "Store", link: "store" },
         ],
         title: "Selling",
       },

@@ -1,14 +1,14 @@
 <template>
   <v-dialog v-model="dialog" persistent max-width="500px">
     <template v-slot:activator="{ on, attrs }">
-      <v-btn small class="ma-1" elevation="2" color="indigo" icon outlined v-bind="attrs" v-on="on">
-        <v-icon small> mdi-pencil </v-icon>
+      <v-btn small class="ma-1" elevation="2" color="error" icon outlined v-bind="attrs" v-on="on">
+        <v-icon small> mdi-delete </v-icon>
       </v-btn>
     </template>
     <v-card>
-      <v-card-title class="indigo">
+      <v-card-title class="error">
         <span style="color: white;">
-          EDIT PAYMENT OF THE ORDER #({{ OrderObject.id }})-PAY(#{{ payementItem.id }})
+          DELETE PAYMENT OF THE ORDER #({{ OrderObject.id }})-PAY(#{{ payementItem.id }})
         </span>
       </v-card-title>
       <v-card-text>
@@ -19,23 +19,15 @@
                 <h2 class="text-h6">Client : {{ OrderObject.customer.name }}</h2>
                 <h3 class="text-h6">Cost of All the order : {{ OrderObject.total_amount }} ($)</h3>
                 <h3 class="text-h6"> Amount already paid: {{ paidAmountOrder }} ($)</h3>
+                <h3 class="text-h6"> The amount to delete: {{ amount_paid }} ($)</h3>
                 <h3 class="text-h6">Date of the operation: {{ OrderObject.order_date }}</h3>
+                <h3 class="text-h6">The amount remaining after deletion: {{ OrderObject.total_amount - (paidAmountOrder
+    -
+    amount_paid) }}($)</h3>
               </v-col>
-              <v-col cols="6">
-                <label for="amount_paid">Amount Payment to edit ($)</label>
-                <v-text-field class="mt-0" :rules="[rules.required]" id="amount_paid" type="number"
-                  v-model="amount_paid"></v-text-field>
-              </v-col>
-              <v-col cols="6">
-                <label for="amount_remaining">The amount remaining ($)</label>
-                <h2 class="mt-6 text-center" id="amount_remaining">{{ OrderObject.total_amount - amount_paid -
-    paidAmountOrder }}</h2>
-              </v-col>
-
             </v-row>
           </v-form>
         </v-container>
-        <small>*indicates required field</small>
         <div class="error mt-2" v-if="errors.length">
           <v-alert dense type="error" v-for="error in errors" :key="error">{{
     error
@@ -44,11 +36,11 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn color="blue darken-1" text @click="removeAddDialog()">
+        <v-btn color="blue darken-1" @click="removeAddDialog()">
           Close
         </v-btn>
-        <v-btn :loading="loadingButton" color="blue darken-1" text @click="editPayment()">
-          Confirm Edit Pay.
+        <v-btn :loading="loadingButton" color="error darken-1" @click="deletePayment()">
+          Delete Pay.
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -95,7 +87,7 @@ export default {
       return result
     },
 
-    async editPayment() {
+    async deletePayment() {
       this.loadingButton = true;
       this.errors = [];
       var result = true
@@ -111,11 +103,7 @@ export default {
 
       else {
         await axios
-          .put(`kcs/api/payment-order/${this.payementItem.id}/`,
-            {
-              "amount_paid": this.amount_paid,
-              "purchase_order_id": this.idOrder
-            })
+          .delete(`kcs/api/payment-order/${this.payementItem.id}/`)
           .then((response) => {
             this.$emit("getOrderPayments");
             this.loadingButton = false;

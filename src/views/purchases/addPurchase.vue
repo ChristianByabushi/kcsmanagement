@@ -52,8 +52,8 @@
         </v-container>
         <div class="error mt-2" v-if="errors.length">
           <v-alert dense type="error" v-for="error in errors" :key="error">{{
-            error
-          }}</v-alert>
+    error
+  }}</v-alert>
         </div>
       </v-card-text>
       <v-card-actions>
@@ -78,12 +78,12 @@ export default {
   data() {
     return {
       dialog: false,
-      form: false, 
+      form: false,
       date: format(parseISO(new Date().toISOString()), 'yyyy-MM-dd'),
       menu1: false,
       menu2: false,
-      errors: [], 
-      suppliers:[],
+      errors: [],
+      suppliers: [],
       date: format(parseISO(new Date().toISOString()), 'yyyy-MM-dd'),
       supplier_id: null,
       stock_quantity: "",
@@ -99,6 +99,7 @@ export default {
   computed: {
     computedDateFormattedMomentjs() {
       return this.date ? moment(this.date).format('dddd, MMMM Do YYYY') : ''
+
     },
     computedDateFormattedDatefns() {
       return this.date ? format(parseISO(this.date), 'EEEE, MMMM do yyyy') : ''
@@ -142,6 +143,8 @@ export default {
     async postForAddingProductPurchased() {
       this.loadingButton = true;
       this.errors = [];
+      const formattedDate = moment(this.date).format('YYYY-MM-DD') + ' ' +
+        moment().format('HH:mm:ss');
       const formData = new FormData()
       formData.append('product_id', this.product_id)
       formData.append('supplier_id', this.supplier_id)
