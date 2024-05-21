@@ -304,7 +304,7 @@ export default {
             const config = {
                 responseType: 'blob'
             };
-            axios.get(`kcs/api/order-state/${orderItemId}?typeOrder=False`, config)
+            axios.get(`kcs/api/order-state/${orderItemId}/?typeOrder=False`, config)
                 .then(response => {
                     const blob = new Blob([response.data], { type: 'application/pdf' });
                     const pdfUrl = window.URL.createObjectURL(blob);
@@ -315,8 +315,8 @@ export default {
                 });
         },
 
-        async getOrders() { 
-            
+        async getOrders() {
+
             if (this.search === "") {
                 this.$store.commit("setIsLoadingData", true);
             }

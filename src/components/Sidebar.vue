@@ -7,28 +7,6 @@
     </v-list-item>
     <v-divider></v-divider>
     <div>
-      <!-- <v-list
-          v-for="[icon, text, color, link] in linksAdmin"
-          :key="icon"
-          link
-        >
-          <v-list-item dense :to="{ name: link }">
-            <v-list-item-icon>
-              <v-icon :color="$vuetify.theme.dark ? 'white' : color">{{
-                icon
-              }}</v-icon>
-            </v-list-item-icon>
-
-            <v-list-item-content
-              @click="link == '/login' ? logout() : donothing()"
-            >
-              <v-list-item-title :color="color">
-                <span>{{ text }}</span></v-list-item-title
-              >
-            </v-list-item-content>
-          </v-list-item>
-        </v-list>  -->
-
       <v-list v-for="item in items" :key="item.title">
         <v-list-group v-model="item.active" :prepend-icon="item.action" no-action v-if="item.items.length > 0">
           <template v-slot:activator>
@@ -73,8 +51,9 @@ export default {
     items: [
       {
         action: "mdi-microsoft-windows",
-        title: "Dashboard",
+        title: "dashboard",
         items: [],
+        active: false,
         link: "dashboard",
       },
       {

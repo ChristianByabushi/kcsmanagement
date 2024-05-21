@@ -1,7 +1,7 @@
 <template>
   <v-container pa-4>
     <v-card class="mt-2" elevation="2">
-      <v-row no-gatthers>
+      <v-row no-gatthers >
         <v-col cols="3 md-6" class="pa-0 ma-0 ml-2">
           <v-select class="mt-4 ml-3" outlined dense :items="products" clearable item-value="id" item-text="name"
             v-model="selectedProduct" label="Product"></v-select>
@@ -141,14 +141,19 @@
 
       <template>
         <div class="text-justify mt-2 ml-0">
-          <v-row class="ma-0">
-            <v-col cols="3" class="mt-2">
-              ($) Total :
+          <v-row class="ma-0" style="border-top: indigo 1px solid;">
+            <v-col cols="3" class="mt-2" v-if="typeItem == 'Purchases'">
+              ($) CostOfAllTotal :
               <div>
                 {{ countTotalPrice.toFixed(3) }}
-
               </div>
             </v-col>
+            <v-col cols="3" class="mt-2" v-else>
+              <div>AllTotalQuantity : {{ countTotalQty.toFixed(3) }}</div>
+              <div>AllTotalSold : {{ countTotalQtySold.toFixed(3) }}</div>
+              <div>AllRemaining : {{ countRemaining.toFixed(3) }} </div>
+            </v-col>
+
             <v-spacer></v-spacer>
 
             <v-col cols="3">
@@ -206,9 +211,25 @@ export default {
     countTotalItems() {
       return this.purchases.length
     },
+
     countTotalPrice() {
       return this.purchases.reduce((acc, curVal) => {
         return acc += curVal.unit_price * curVal.stock_quantity
+      }, 0.)
+    },
+    countTotalQty() {
+      return this.results.reduce((acc, curVal) => {
+        return acc += curVal.totalQty
+      }, 0.)
+    },
+    countTotalQtySold() {
+      return this.results.reduce((acc, curVal) => {
+        return acc += curVal.quantitySold
+      }, 0.)
+    },
+    countRemaining() {
+      return this.results.reduce((acc, curVal) => {
+        return acc += curVal.totalQty - curVal.quantitySold
       }, 0.)
     },
     computedDateFormattedMomentjs() {
@@ -269,12 +290,17 @@ export default {
     search: function (newValue, olValue) {
       this.getPurchases();
     },
-
     selectedProduct: {
       handler() {
         this.getPurchases();
       },
     },
+
+    typeItem: {
+      handler() {
+        this.getPurchases();
+      },
+    }
 
   },
 
@@ -325,7 +351,8 @@ export default {
       if (this.page_size === "All") {
         this.page_size = this.count;
       } else {
-        pagination = `?page=${this.page}&page_size=${this.page_size}`;
+        pagination = `?page=${this.page}&perpage=${this.page_size}`;
+
       }
 
       var dateVariables = ''
