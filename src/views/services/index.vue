@@ -256,7 +256,7 @@ export default {
             this.getOrders();
         },
     },
-    async mounted() {
+    mounted() {
         this.getProducts()
         this.getOrders()
     },
