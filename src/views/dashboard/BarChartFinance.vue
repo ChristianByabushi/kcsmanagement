@@ -15,12 +15,12 @@ export default {
     name: 'BarChart',
     components: { Bar, Pie },
     props: {
-        storestateItems: [],
+        monthyAnalysisData: [],
     },
 
     data() {
         return {
-
+            loaded: false,
             chartData: {
                 labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
                 datasets: [
@@ -53,12 +53,22 @@ export default {
             }
         }
     },
-    created() {
-        this.try()
+    async mounted() {
+        this.loaded = false
+        let expenses = []
+        let payments = []
+        let difference = []
+        this.monthyAnalysisData.forEach(item => {
+            expenses.push(item.costOrderMonth)
+            payments.push(item.costPaymentOrder)
+            difference.push(item.Difference)
+        });
+        this.loaded = true
     },
+
     methods: {
-        try() {
-            console.log(this.storestateItems)
+        async try() {
+
         }
     }
 }

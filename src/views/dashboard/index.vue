@@ -7,11 +7,17 @@
       <v-spacer></v-spacer>
       <div class="mt-1 mr-2">
         <template>
-          <v-row>
-            <v-col cols="12">
-              <label for="dateDashboard">Date: </label>
-              <input id='dateDashboard' style="width: 115px;" class="mt-8 mr-2" type="date"
-                v-model="filterDate"></input>
+          <v-row class="mt-4">
+            <v-col cols="9">
+              <v-menu v-model="menu1" :close-on-content-click="true">
+                <template v-slot:activator="{ on, attrs }">
+                  <v-text-field dense class='mt-0' :value="computedDateFormattedMomentjs"  readonly
+                    v-bind="attrs" v-on="on" @click:clear="filterDate = null"></v-text-field>
+                </template>
+                <v-date-picker v-model="filterDate" @change="menu1 = false"></v-date-picker>
+              </v-menu>
+            </v-col>
+            <v-col cols="3" >
               <v-menu bottom left>
                 <template v-slot:activator="{ on, attrs }">
                   <v-btn icon v-bind="attrs" v-on="on">
@@ -106,7 +112,7 @@
         </v-row>
       </v-col>
       <v-col cols="12" lg="6">
-        <BarChartFinance :storestateItems="dataDashboard.storestateItems"
+        <BarChartFinance :monthyAnalysisData="dataDashboard.monthyAnalysisData"
           aria-label="Sales figures for the years 2022 to 2024. Sales in 2022: 987, Sales in 2023: 1209, Sales in 2024: 825.">
         </BarChartFinance>
       </v-col>
@@ -184,6 +190,7 @@
 </template>
 <script>
 import BarChartFinance from './BarChartFinance.vue'
+import moment from 'moment'
 import axios from 'axios'
 import { format, parseISO } from 'date-fns'
 export default {
@@ -194,7 +201,8 @@ export default {
       vlistFilterTime: 'Week',
       dataDashboard: '',
       errors: [],
-      filterDate: format(parseISO(new Date().toISOString()), 'yyyy-dd-MM'),
+      menu1: false,
+      filterDate: format(parseISO(new Date().toISOString()), 'yyyy-MM-dd'),
       itemsPeriod: [
         { title: 'Month' },
         { title: 'Year' },
@@ -219,13 +227,17 @@ export default {
   mounted() {
     this.getDashboardAnalysis(this.vlistFilterTime)
   },
+  computed: {
+    computedDateFormattedMomentjs() {
+      return this.filterDate ? moment(this.filterDate).format('dddd, MMMM Do YYYY') : ''
+    },
+  },
   methods: {
     async getDashboardAnalysis(title) {
       this.vlistFilterTime = title
       this.$store.commit("setIsLoadingData", true);
-      let formattedDate = format(parseISO(this.filterDate), 'yyyy-dd-MM')
       await axios
-        .get(`kcs/api/dashboard-results/?periodfilter=${this.vlistFilterTime}&filterDate=${formattedDate}`)
+        .get(`kcs/api/dashboard-results/?periodfilter=${this.vlistFilterTime}&filterDate=${this.filterDate}`)
         .then((response) => {
           this.dataDashboard = response.data
         })
